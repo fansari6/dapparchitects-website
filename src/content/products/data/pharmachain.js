@@ -178,19 +178,6 @@ export default {
       desc: 'ERP integration (SAP, Oracle), IoT cold chain monitoring, mobile application (React Native), ADR/pharmacovigilance reporting, EMVS integration.',
     },
   ],
-  demoCredentials: [
-    {
-      role: 'Government Regulator',
-      username: 'government1',
-      password: 'Gov1-1234',
-    },
-    {
-      role: 'Manufacturer',
-      username: 'manufacturer1',
-      password: 'Mfg1-1234',
-    },
-    { role: 'Doctor', username: 'doctor1', password: 'Doc1-1234' },
-    { role: 'Pharmacy', username: 'pharmacy1', password: 'Pharm1-1234' },
-  ],
+  
   color: '#2563EB',
 };

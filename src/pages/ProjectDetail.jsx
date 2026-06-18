@@ -13,7 +13,7 @@ import RolesGrid from '@/components/portfolio/RolesGrid';
 import DifferentiatorsGrid from '@/components/portfolio/DifferentiatorsGrid';
 import RegulatoryTable from '@/components/portfolio/RegulatoryTable';
 import Roadmap from '@/components/portfolio/Roadmap';
-import DemoCredentials from '@/components/portfolio/DemoCredentials';
+import RequestDemo from '@/components/portfolio/RequestDemo';
 import RealDevicesTable from '@/components/portfolio/RealDevicesTable';
 import DemoEmbed from '@/components/portfolio/DemoEmbed';
 import ProjectTitle from '@/components/portfolio/ProjectTitle';
@@ -217,12 +217,9 @@ export default function ProjectDetail() {
             <RegulatoryTable frameworks={project.regulatoryFrameworks} />
           )}
           {project.roadmap && <Roadmap roadmap={project.roadmap} />}
-          {project.demoCredentials && project.liveDemo && (
-            <DemoCredentials
-              credentials={project.demoCredentials}
-              liveDemo={project.liveDemo}
-            />
-          )}
+          
+            <RequestDemo title={project.title} />
+          
           {project.realDevices && (
             <RealDevicesTable devices={project.realDevices} />
           )}
