@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <script>
+      // Set theme before first paint to avoid a flash. Default: dark.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          var dark = t ? t === 'dark' : true;
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link
+      rel="preload"
+      href="/fonts/DESIB___.TTF"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563EB" />
+    <!-- Title and meta are managed per-page by Seo (see src/components/Seo.jsx),
+         with site-wide defaults in src/Layout.jsx. Don't add a static title
+         element here or it will duplicate the managed one in the output. -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

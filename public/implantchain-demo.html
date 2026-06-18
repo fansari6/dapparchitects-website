@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ImplantChain — Full Feature Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:#03060f;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+/* --- Application Name --- */
+      @font-face {
+        font-family: 'DesignerBlock';
+        src: url('/fonts/DESIB___.TTF') format('truetype');
+        font-display: swap;
+      }
+      .brand-display {
+        font-family: 'DesignerBlock', sans-serif;
+        font-size: 45px;
+        line-height: 1;
+        margin-bottom: 14px;
+        letter-spacing: 3px;
+      }
+      .brand-solid {
+        color: #ff8000;
+      }
+      .brand-outline {
+        color: transparent;
+        -webkit-text-stroke: 2.5px #ff8000;
+        text-stroke: 2.5px #ff8000;
+      }
+#demo{width:100%;max-width:900px;background:#060c1a;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(56,189,248,0.08)}
+#screen{height:560px;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity 0.5s ease;pointer-events:none}
+.slide.active{opacity:1;pointer-events:all}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;background:#080f20;border-bottom:1px solid rgba(56,189,248,0.1);flex-shrink:0}
+.topbar-brand{font-size:13px;font-weight:700;color:#38bdf8;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;display:flex;align-items:center;gap:7px}
+.topbar-user{font-size:10px;color:#475569;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:10px}
+.role-pill{padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+.rp-gov{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+.rp-mfr{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.25)}
+.rp-dist{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.25)}
+.rp-nurse{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.25)}
+.rp-sc{background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.25)}
+.rp-ip{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.25)}
+.rp-admin{background:rgba(248,250,252,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)}
+
+/* ── LAYOUT ── */
+.app-layout{display:flex;flex:1;overflow:hidden;min-height:0}
+.sidebar{width:172px;background:#080f20;border-right:1px solid rgba(56,189,248,0.08);display:flex;flex-direction:column;flex-shrink:0;padding:10px 0;overflow:hidden}
+.nav-section{font-size:8px;color:#1e3a5f;text-transform:uppercase;letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;padding:8px 14px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:11px;color:#334155;margin:1px 6px;border-radius:6px;cursor:pointer;transition:all 0.15s}
+.nav-item.active{background:rgba(56,189,248,0.1);color:#38bdf8;border-left:2px solid #38bdf8}
+.nav-item.alert-item{color:#f87171}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.page{flex:1;padding:16px 18px;overflow:hidden;min-height:0}
+.ph{margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between}
+.ph-left h2{font-size:16px;font-weight:700;color:#e2e8f0;letter-spacing:-0.3px}
+.ph-left p{font-size:10px;color:#475569;margin-top:2px}
+.feature-tag{font-size:9px;font-family:'JetBrains Mono',monospace;color:#38bdf8;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);padding:3px 9px;border-radius:99px;white-space:nowrap}
+
+/* ── KPIs ── */
+.kpi-grid{display:grid;gap:8px;margin-bottom:12px}
+.kpi{background:#0d1529;border:1px solid rgba(56,189,248,0.08);border-radius:8px;padding:10px 12px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.blue::after{background:linear-gradient(90deg,#3b82f6,#38bdf8)}
+.kpi.green::after{background:linear-gradient(90deg,#10b981,#34d399)}
+.kpi.cyan::after{background:linear-gradient(90deg,#06b6d4,#67e8f9)}
+.kpi.amber::after{background:linear-gradient(90deg,#f59e0b,#fcd34d)}
+.kpi.red::after{background:linear-gradient(90deg,#ef4444,#f87171)}
+.kpi.purple::after{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.kpi.teal::after{background:linear-gradient(90deg,#0d9488,#2dd4bf)}
+.kl{font-size:9px;color:#334155;text-transform:uppercase;letter-spacing:0.08em;font-family:'JetBrains Mono',monospace}
+.kv{font-size:21px;font-weight:700;margin-top:2px}
+.kpi.blue .kv{color:#3b82f6}.kpi.green .kv{color:#10b981}.kpi.cyan .kv{color:#06b6d4}
+.kpi.amber .kv{color:#f59e0b}.kpi.red .kv{color:#ef4444}.kpi.purple .kv{color:#8b5cf6}
+.kpi.teal .kv{color:#2dd4bf}
+.kpi-sub{font-size:9.5px;color:#475569;margin-top:1px}
+
+/* ── CARDS ── */
+.card{background:#0d1529;border:1px solid rgba(56,189,248,0.08);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ct{font-size:12px;font-weight:600;color:#e2e8f0}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.05em}
+.bg{background:rgba(16,185,129,0.15);color:#10b981}
+.bb{background:rgba(59,130,246,0.15);color:#3b82f6}
+.ba{background:rgba(245,158,11,0.15);color:#f59e0b}
+.br{background:rgba(239,68,68,0.15);color:#ef4444}
+.bc{background:rgba(6,182,212,0.15);color:#06b6d4}
+.bp{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.bw{background:rgba(248,250,252,0.08);color:#64748b}
+.bt{background:rgba(13,148,136,0.15);color:#2dd4bf}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;font-size:10.5px}
+thead th{text-align:left;padding:5px 9px;font-size:8.5px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid rgba(56,189,248,0.08);font-family:'JetBrains Mono',monospace}
+tbody tr{border-bottom:1px solid rgba(56,189,248,0.05)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:6px 9px;color:#64748b}
+tbody td:first-child{color:#94a3b8;font-family:'JetBrains Mono',monospace;font-size:10px}
+
+/* ── FORMS ── */
+.fg label{display:block;font-size:8.5px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.fg input,.fg select{width:100%;background:#080f20;border:1px solid rgba(56,189,248,0.12);border-radius:6px;color:#e2e8f0;padding:5px 8px;font-size:10.5px;font-family:'Syne',sans-serif;outline:none}
+.fg input.filled{border-color:rgba(56,189,248,0.35);color:#38bdf8}
+.fg input.filled-g{border-color:rgba(16,185,129,0.35);color:#34d399}
+.fg input.filled-a{border-color:rgba(245,158,11,0.35);color:#fbbf24}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif}
+.btn-p{background:linear-gradient(135deg,#3b82f6,#38bdf8);color:#fff}
+.btn-g{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+.btn-a{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff}
+.btn-r{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff}
+.btn-sm{padding:4px 10px;font-size:10px}
+
+/* ── CHAIN STEPS ── */
+.chain{display:flex;align-items:center;margin-bottom:12px}
+.step{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.step-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;z-index:1}
+.step-dot.done{background:rgba(16,185,129,0.2);border:2px solid #10b981}
+.step-dot.active{background:rgba(56,189,248,0.2);border:2px solid #38bdf8;box-shadow:0 0 14px rgba(56,189,248,0.4)}
+.step-dot.wait{background:#0d1529;border:2px solid rgba(56,189,248,0.15)}
+.step-label{font-size:8.5px;color:#475569;text-align:center;font-family:'JetBrains Mono',monospace;max-width:60px}
+.step-connector{flex:1;height:2px;background:linear-gradient(90deg,#10b981,rgba(56,189,248,0.3));margin-top:-15px}
+.step-connector.wait{background:rgba(56,189,248,0.1)}
+
+/* ── ALERTS ── */
+.alert{padding:7px 11px;border-radius:7px;font-size:10.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.alert-red{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#f87171}
+.alert-green{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);color:#34d399}
+.alert-amber{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);color:#fcd34d}
+.alert-blue{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);color:#67e8f9}
+.alert-pulse{animation:pulse-border 1.5s ease-in-out infinite}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 0 4px rgba(239,68,68,0.15)}}
+
+/* ── TX BLOCKS ── */
+.tx-block{background:#080f20;border-radius:7px;padding:8px 10px;border-left:3px solid #38bdf8;margin-bottom:6px}
+.tx-id{font-size:9.5px;color:#38bdf8;font-family:'JetBrains Mono',monospace;word-break:break-all}
+.tx-meta{font-size:9px;color:#334155;margin-top:2px;font-family:'JetBrains Mono',monospace}
+.tx-block.green-tx{border-color:#10b981}.tx-block.green-tx .tx-id{color:#34d399}
+.tx-block.red-tx{border-color:#ef4444}.tx-block.red-tx .tx-id{color:#f87171}
+.tx-block.amber-tx{border-color:#f59e0b}.tx-block.amber-tx .tx-id{color:#fbbf24}
+
+/* ── PROGRESS ── */
+.pbar-bg{height:4px;background:#0d1529;border-radius:3px;overflow:hidden;margin-top:5px}
+.pbar-fill{height:100%;border-radius:3px}
+
+/* ── MRI ALERT ── */
+.mri-banner{background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(239,68,68,0.08));border:1px solid rgba(245,158,11,0.4);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.mri-icon{font-size:22px;flex-shrink:0}
+.mri-text strong{font-size:12.5px;color:#fbbf24;display:block}
+.mri-text span{font-size:10px;color:#78716c}
+
+/* ── URGENCY ── */
+.urg-overdue{color:#f87171;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25)}
+.urg-critical{color:#fb923c;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25)}
+.urg-warning{color:#fbbf24;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)}
+.urg-safe{color:#34d399;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25)}
+.urg-reported{color:#60a5fa;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25)}
+
+/* ── CHECKLIST ── */
+.check-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(56,189,248,0.05);font-size:11px}
+.check-item:last-child{border-bottom:none}
+.check-box{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.check-done{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3)}
+.check-pend{background:#0d1529;border:1px solid rgba(56,189,248,0.15)}
+
+/* ── TIMELINE ── */
+.tl-item{display:flex;gap:12px;margin-bottom:8px}
+.tl-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px}
+.tl-dot.tl-g{background:rgba(16,185,129,0.2);border:1.5px solid #10b981}
+.tl-dot.tl-b{background:rgba(56,189,248,0.2);border:1.5px solid #38bdf8}
+.tl-dot.tl-a{background:rgba(245,158,11,0.2);border:1.5px solid #f59e0b}
+.tl-dot.tl-r{background:rgba(239,68,68,0.2);border:1.5px solid #ef4444}
+.tl-line{width:1px;background:rgba(56,189,248,0.12);margin:0 11.5px;margin-top:-4px}
+.tl-text strong{font-size:11px;color:#e2e8f0;display:block}
+.tl-text span{font-size:9.5px;color:#475569;font-family:'JetBrains Mono',monospace}
+
+/* ── QR CODE ── */
+.qr-box{width:90px;height:90px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-inner{width:76px;height:76px;background:repeating-linear-gradient(0deg,#000 0,#000 3px,#fff 3px,#fff 6px),repeating-linear-gradient(90deg,#000 0,#000 3px,#fff 3px,#fff 6px);border-radius:3px;position:relative;overflow:hidden}
+.qr-inner::before{content:'';position:absolute;inset:8px;background:#fff;border-radius:2px}
+.qr-inner::after{content:'⬛';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#000}
+
+/* ── CONTROLS ── */
+.controls{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#080f20;border-top:1px solid rgba(56,189,248,0.08);flex-shrink:0}
+.cbtn{background:transparent;border:1px solid rgba(56,189,248,0.15);color:#475569;padding:5px 13px;border-radius:5px;font-size:11px;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.15s;flex-shrink:0}
+.cbtn:hover{background:rgba(56,189,248,0.08);color:#e2e8f0}
+.cbtn.play{background:linear-gradient(135deg,#3b82f6,#38bdf8);border-color:transparent;color:#fff}
+.cbtn.pause{background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.3);color:#38bdf8}
+#sinfo{font-size:9.5px;color:#334155;font-family:'JetBrains Mono',monospace;min-width:240px;text-align:center;flex-shrink:0}
+#prog-o{flex:1;height:3px;background:#0d1529;border-radius:2px;overflow:hidden}
+#prog-i{height:100%;background:linear-gradient(90deg,#3b82f6,#38bdf8);width:0%;transition:width 0.08s linear}
+</style>
+</head>
+<body>
+<div id="demo">
+<div id="screen">
+
+<!-- ══ SLIDE 1: TITLE ════════════════════════════════════════════════ -->
+<div class="slide active" id="s1" style="background:radial-gradient(ellipse at 30% 40%,#0f1e38 0%,#03060f 60%);align-items:center;justify-content:center">
+  <div style="text-align:center;padding:32px;max-width:680px">
+    <div style="font-size:52px;margin-bottom:14px;filter:drop-shadow(0 0 32px rgba(56,189,248,0.6))">⬡</div>
+    <div class="brand-display">
+              <span class="brand-solid">Implant</span
+              ><span class="brand-outline">Chain</span>
+            </div>
+    <div style="font-size:12px;color:#38bdf8;font-family:'JetBrains Mono',monospace;letter-spacing:0.18em;margin-bottom:28px">SURGICAL IMPLANT TRACEABILITY · HYPERLEDGER FABRIC 2.5</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px">
+      <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:8px;padding:12px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#38bdf8">13</div><div style="font-size:9px;color:#475569;margin-top:2px;font-family:'JetBrains Mono',monospace">FEATURES</div>
+      </div>
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;padding:12px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#10b981">7</div><div style="font-size:9px;color:#475569;margin-top:2px;font-family:'JetBrains Mono',monospace">ROLES</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:12px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#f59e0b">135</div><div style="font-size:9px;color:#475569;margin-top:2px;font-family:'JetBrains Mono',monospace">TESTS</div>
+      </div>
+      <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:12px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#8b5cf6">LIVE</div><div style="font-size:9px;color:#475569;margin-top:2px;font-family:'JetBrains Mono',monospace">PRODUCTION</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#334155;font-family:'JetBrains Mono',monospace">implantchain.dapparchitects.com</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2: DASHBOARD ════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain</div>
+    <div class="topbar-user"><span>admin@implantchain.com</span><span class="role-pill rp-admin">Admin</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active">📊 Dashboard</div>
+      <div class="nav-section">Portals</div>
+      <div class="nav-item">🏛 Government</div>
+      <div class="nav-item">🏭 Manufacturer</div>
+      <div class="nav-item">📦 Distribution</div>
+      <div class="nav-item">🏥 Hospital</div>
+      <div class="nav-section">Admin</div>
+      <div class="nav-item">👥 Users</div>
+      <div class="nav-item">📈 Analytics</div>
+      <div class="nav-item">📋 Audit Log</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📊 System Dashboard</h2><p>Live blockchain & database metrics</p></div></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi blue"><div class="kl">Devices</div><div class="kv">47</div><div class="kpi-sub">FDA registered</div></div>
+          <div class="kpi green"><div class="kl">Clearances</div><div class="kv">39</div><div class="kpi-sub">510(k) + PMA</div></div>
+          <div class="kpi cyan"><div class="kl">Active Lots</div><div class="kv">124</div><div class="kpi-sub">QC released</div></div>
+          <div class="kpi amber"><div class="kl">Consignments</div><div class="kv">312</div><div class="kpi-sub">In 28 hospitals</div></div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi purple"><div class="kl">Implants</div><div class="kv">1,847</div><div class="kpi-sub">Recorded on chain</div></div>
+          <div class="kpi red"><div class="kl">Active Recalls</div><div class="kv">3</div><div class="kpi-sub">Class I–II</div></div>
+          <div class="kpi teal"><div class="kl">MDR Pending</div><div class="kv">7</div><div class="kpi-sub">Deadlines due</div></div>
+          <div class="kpi green"><div class="kl">UDI Compliance</div><div class="kv">94%</div><div class="kpi-sub">Across hospitals</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Recent Activity</span><span class="badge bc">Live</span></div>
+            <div class="tl-item"><div class="tl-dot tl-g">✓</div><div class="tl-text"><strong>Lot STR-2024-089 QC Released</strong><span>manufacturer1 · 3 min ago</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-b">⬡</div><div class="tl-text"><strong>Implant IMPL-4821 Recorded</strong><span>nurse1 · 8 min ago</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-r">⚠</div><div class="tl-text"><strong>Recall Alert Sent — LOT-ZIM-22</strong><span>government1 · 22 min ago</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-a">🏥</div><div class="tl-text"><strong>New Hospital Onboarded</strong><span>admin · 1 hr ago</span></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Alerts Requiring Action</span></div>
+            <div class="alert alert-red alert-pulse">🚨 <span><strong>2 MDR deadlines overdue</strong> — immediate action required</span></div>
+            <div class="alert alert-amber">⚠ <span><strong>14 consignments</strong> expiring within 30 days</span></div>
+            <div class="alert alert-amber">⏰ <span><strong>3 lots</strong> with 5-day expiry warning</span></div>
+            <div class="alert alert-blue">ℹ <span><strong>Hospital Alpha</strong> onboarding 60% complete</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: GOVERNMENT — DEVICE REGISTRATION ════════════════════ -->
+<div class="slide" id="s3">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Government Portal</span></div>
+    <div class="topbar-user"><span>government1@implantchain.com</span><span class="role-pill rp-gov">Government</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Regulatory</div>
+      <div class="nav-item active">🏛 Device Registry</div>
+      <div class="nav-item">📋 Clearances</div>
+      <div class="nav-item">🔍 Lot Inspector</div>
+      <div class="nav-item">🚨 Recall Authority</div>
+      <div class="nav-item">📊 Compliance Reports</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>🏛 Device Registry</h2><p>Register FDA-cleared devices on the blockchain</p></div><span class="feature-tag">FDA UDI Compliance</span></div>
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-hdr"><span class="ct">Register New Device</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg"><label>UDI-DI</label><input class="filled" value="(01)00643169007234" readonly style="font-family:'JetBrains Mono',monospace"/></div>
+            <div class="fg"><label>Device Name</label><input class="filled" value="Stryker Triathlon Total Knee System"/></div>
+            <div class="fg"><label>Manufacturer</label><input class="filled" value="Stryker Corporation"/></div>
+            <div class="fg"><label>Category</label><input class="filled" value="Orthopedic — Joint Replacement"/></div>
+            <div class="fg"><label>MRI Safety</label><input class="filled-a" value="⚠ Conditional — See IFU" readonly/></div>
+            <div class="fg"><label>GUDID Verified</label><input class="filled-g" value="✓ Verified via FDA API" readonly/></div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-g">⬡ Submit to Blockchain</button>
+            <button class="btn btn-p">🔍 Verify GUDID</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div class="tx-block">
+            <div style="font-size:9px;color:#475569;margin-bottom:3px">LAST TX · REGISTER_DEVICE</div>
+            <div class="tx-id">0x7f2c...d891</div>
+            <div class="tx-meta">47 devices registered · Fabric v2.5</div>
+          </div>
+          <div class="tx-block green-tx">
+            <div style="font-size:9px;color:#475569;margin-bottom:3px">CLEARANCES</div>
+            <div class="tx-id">K193629 · Active</div>
+            <div class="tx-meta">510(k) · Expires 2029-01-15</div>
+          </div>
+          <div class="tx-block amber-tx">
+            <div style="font-size:9px;color:#475569;margin-bottom:3px">RECALL AUTH</div>
+            <div class="tx-id">LOT-ZIM-2204</div>
+            <div class="tx-meta">Class II · Recalled 2024-11-08</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: MANUFACTURER — ISO + LOT ════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Manufacturer Portal</span></div>
+    <div class="topbar-user"><span>manufacturer1@implantchain.com</span><span class="role-pill rp-mfr">Manufacturer</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Production</div>
+      <div class="nav-item">📜 ISO 13485 Certs</div>
+      <div class="nav-item active">📦 Lot Management</div>
+      <div class="nav-item">🔬 QC Release</div>
+      <div class="nav-item">📊 Lot Analytics</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📦 Lot Management</h2><p>Create lots · Upload ISO 13485 · QC release</p></div></div>
+        <div class="chain">
+          <div class="step"><div class="step-dot done">📜</div><div class="step-label">ISO Cert</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">📦</div><div class="step-label">Create Lot</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot active">🔬</div><div class="step-label">QC Release</div></div>
+          <div class="step-connector wait"></div>
+          <div class="step"><div class="step-dot wait">🚚</div><div class="step-label">Distribute</div></div>
+          <div class="step-connector wait"></div>
+          <div class="step"><div class="step-dot wait">🏥</div><div class="step-label">Implanted</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Lot STR-2024-091</span><span class="badge ba">Quarantine</span></div>
+            <div style="font-size:10.5px;color:#64748b;line-height:1.7">
+              <div style="display:flex;justify-content:space-between"><span>Device</span><span style="color:#e2e8f0">Triathlon TKS</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Clearance</span><span style="color:#10b981">K193629 ✓</span></div>
+              <div style="display:flex;justify-content:space-between"><span>ISO Cert</span><span style="color:#10b981">BSI-2024-STR ✓</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Quantity</span><span style="color:#e2e8f0">150 units</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Mfg Date</span><span style="color:#e2e8f0">2024-09-01</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Expiry</span><span style="color:#e2e8f0">2027-09-01</span></div>
+            </div>
+            <div class="fg" style="margin-top:8px"><label>QC Notes</label><input class="filled-g" value="All sterility checks passed. Biocompatibility verified."/></div>
+            <button class="btn btn-g" style="margin-top:8px;width:100%">✓ Release Lot to Active</button>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Active Lots</span></div>
+            <table>
+              <thead><tr><th>Lot #</th><th>Status</th><th>Qty Left</th><th>Expiry</th></tr></thead>
+              <tbody>
+                <tr><td>STR-2024-088</td><td><span class="badge bg">Active</span></td><td style="color:#e2e8f0">87</td><td>2027-08</td></tr>
+                <tr><td>STR-2024-087</td><td><span class="badge bg">Active</span></td><td style="color:#e2e8f0">43</td><td>2027-07</td></tr>
+                <tr><td>STR-2024-086</td><td><span class="badge ba">Low Stock</span></td><td style="color:#f59e0b">8</td><td>2027-05</td></tr>
+                <tr><td>STR-2024-085</td><td><span class="badge br">Recalled</span></td><td style="color:#ef4444">—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: DISTRIBUTOR — CONSIGNMENT ═══════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Distributor Portal</span></div>
+    <div class="topbar-user"><span>distributor1@implantchain.com</span><span class="role-pill rp-dist">Distributor</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Inventory</div>
+      <div class="nav-item active">📦 My Consignments</div>
+      <div class="nav-item">🏥 Assigned Hospitals</div>
+      <div class="nav-item">📅 Visit Log</div>
+      <div class="nav-item alert-item">⚠ Expiry Alerts</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📦 Consignment Management</h2><p>Territory-enforced · 6 hospitals assigned</p></div><button class="btn btn-p btn-sm">+ New Consignment</button></div>
+        <table style="margin-bottom:10px">
+          <thead><tr><th>Consignment ID</th><th>Device</th><th>Hospital</th><th>Location</th><th>Qty</th><th>Expiry</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>CONS-2024-4821</td><td>Triathlon TKS</td><td>Memorial Hospital</td><td>OR Suite B · Tray 3</td><td style="color:#e2e8f0">18</td><td>2027-09</td><td><span class="badge bg">Active</span></td></tr>
+            <tr><td>CONS-2024-4820</td><td>Triathlon TKS</td><td>University Med Ctr</td><td>OR Room 2 · Tray 1</td><td style="color:#e2e8f0">12</td><td>2027-08</td><td><span class="badge bg">Active</span></td></tr>
+            <tr><td>CONS-2024-4818</td><td>ZimVac Hip Stem</td><td>Regional Hospital</td><td>Ortho Stock Room</td><td style="color:#f59e0b">4</td><td>2026-11</td><td><span class="badge ba">Low Stock</span></td></tr>
+            <tr><td>CONS-2024-4815</td><td>Stryker Spine Rod</td><td>Memorial Hospital</td><td>Spine OR · Cabinet A</td><td style="color:#e2e8f0">22</td><td style="color:#f59e0b">2025-03</td><td><span class="badge ba">Expiry Soon</span></td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-amber">⚠ <strong>Territory enforcement active</strong> — consignments can only be created for your 6 assigned hospitals. Unauthorized hospital assignments are blocked.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: FEATURE 2 — QR CODES ════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Distributor Portal</span></div>
+    <div class="topbar-user"><span>distributor1@implantchain.com</span><span class="role-pill rp-dist">Distributor</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item active">📦 My Consignments</div>
+      <div class="nav-item">📅 Visit Log</div>
+      <div class="nav-item alert-item">⚠ Expiry Alerts</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>🔲 QR Code — CONS-2024-4821</h2><p>Scan to verify device authenticity</p></div><span class="feature-tag">Feature 2 · QR Codes</span></div>
+        <div class="card">
+          <div style="display:flex;gap:20px;align-items:flex-start">
+            <div class="qr-box"><div class="qr-inner"></div></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:10px">Stryker Triathlon Total Knee System</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10.5px">
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">UDI-DI</div><div style="color:#38bdf8;font-family:'JetBrains Mono',monospace">(01)00643169007234</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Lot Number</div><div style="color:#e2e8f0">STR-2024-088</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Hospital</div><div style="color:#e2e8f0">Memorial Hospital</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Location</div><div style="color:#e2e8f0">OR Suite B · Tray 3</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Qty Available</div><div style="color:#10b981;font-weight:600">18 units</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Expiry Date</div><div style="color:#e2e8f0">2027-09-01</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">MRI Safety</div><div style="color:#f59e0b">⚠ Conditional</div></div>
+                <div><div style="color:#334155;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase">Blockchain Status</div><div style="color:#10b981">✓ Verified</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(56,189,248,0.08);font-size:9.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-align:center">
+            Scan with any camera app · implantchain.dapparchitects.com/verify
+          </div>
+        </div>
+        <div class="alert alert-green">✓ Device authentic · FDA clearance active · ISO 13485 valid · No active recalls</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: FEATURE 10 — REP VISIT LOG ══════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Distributor Portal</span></div>
+    <div class="topbar-user"><span>distributor1@implantchain.com</span><span class="role-pill rp-dist">Distributor</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">📦 My Consignments</div>
+      <div class="nav-item active">📅 Visit Log</div>
+      <div class="nav-item alert-item">⚠ Expiry Alerts</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📅 Rep Visit Log</h2><p>Schedule · check in · complete hospital visits</p></div><span class="feature-tag">Feature 10 · Visit Log</span></div>
+        <table style="margin-bottom:10px">
+          <thead><tr><th>Visit ID</th><th>Hospital</th><th>Date</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>VIS-2024-0891</td><td>Memorial Hospital</td><td>Today 09:30</td><td>Procedure Support</td>
+              <td><span class="badge bc">Checked In · 09:28</span></td>
+              <td><button class="btn btn-g btn-sm">✓ Complete</button></td>
+            </tr>
+            <tr>
+              <td>VIS-2024-0890</td><td>University Med Ctr</td><td>Yesterday</td><td>Inventory Restock</td>
+              <td><span class="badge bg">Completed · 16:44</span></td>
+              <td><span style="color:#334155;font-size:10px">—</span></td>
+            </tr>
+            <tr>
+              <td>VIS-2024-0895</td><td>Regional Hospital</td><td>Nov 22, 14:00</td><td>New Device Training</td>
+              <td><span class="badge bb">Scheduled</span></td>
+              <td><button class="btn btn-p btn-sm">Check In</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="card" style="background:rgba(16,185,129,0.04);border-color:rgba(16,185,129,0.2)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-size:24px">✅</div>
+            <div><div style="font-size:12px;font-weight:600;color:#34d399">Visit VIS-2024-0891 Completed</div><div style="font-size:10px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">Check-in: 09:28 · Completion: 11:47 · Duration: 2h 19m · Recorded on blockchain</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: OR SCHEDULING — FEATURE 8 ═══════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Supply Chain Portal</span></div>
+    <div class="topbar-user"><span>supplychain1@implantchain.com</span><span class="role-pill rp-sc">Supply Chain</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">OR Management</div>
+      <div class="nav-item active">📅 OR Schedule</div>
+      <div class="nav-item">📦 Consignments</div>
+      <div class="nav-item alert-item">⚠ Expiry Alerts</div>
+      <div class="nav-item">📊 Inventory</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📅 Today's OR Cases</h2><p>Memorial Hospital · Thursday Nov 21, 2024</p></div><span class="feature-tag">Feature 8 · OR Scheduling</span></div>
+        <table>
+          <thead><tr><th>Case ID</th><th>Time / OR</th><th>Surgeon</th><th>Procedure</th><th>Device Needed</th><th>Consignment</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>CASE-2024-0892</td><td>07:30 · OR-1</td><td>Dr. Johnson</td><td>Total Knee Arthroplasty</td><td>Triathlon TKS</td>
+              <td><span class="badge bg">CONS-4821 ✓</span></td><td><span class="badge bg">Completed</span></td>
+            </tr>
+            <tr>
+              <td>CASE-2024-0893</td><td>09:00 · OR-2</td><td>Dr. Patel</td><td>Total Hip Arthroplasty</td><td>ZimVac Hip Stem</td>
+              <td><span class="badge bg">CONS-4818 ✓</span></td><td><span class="badge bc">In Progress</span></td>
+            </tr>
+            <tr>
+              <td>CASE-2024-0894</td><td>11:30 · OR-1</td><td>Dr. Williams</td><td>Lumbar Fusion L4-L5</td><td>Spine Rod System</td>
+              <td><span class="badge bg">CONS-4815 ✓</span></td><td><span class="badge bb">Scheduled</span></td>
+            </tr>
+            <tr>
+              <td>CASE-2024-0895</td><td>14:00 · OR-3</td><td>Dr. Chen</td><td>Shoulder Arthroplasty</td><td>Shoulder System</td>
+              <td><span class="badge ba">Confirm Needed</span></td><td><span class="badge bb">Scheduled</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">
+          <div class="kpi green"><div class="kl">Completed</div><div class="kv" style="font-size:18px">1</div></div>
+          <div class="kpi cyan"><div class="kl">In Progress</div><div class="kv" style="font-size:18px">1</div></div>
+          <div class="kpi blue"><div class="kl">Scheduled</div><div class="kv" style="font-size:18px">2</div></div>
+          <div class="kpi amber"><div class="kl">Needs Action</div><div class="kv" style="font-size:18px">1</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: NURSE — IMPLANT RECORD + MRI ALERT ══════════════════ -->
+<div class="slide" id="s9">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ OR Nurse Portal</span></div>
+    <div class="topbar-user"><span>nurse1@implantchain.com</span><span class="role-pill rp-nurse">Nurse · Memorial Hospital</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">OR Tools</div>
+      <div class="nav-item active">💉 Record Implant</div>
+      <div class="nav-item">📋 Today's Cases</div>
+      <div class="nav-item">📦 Opened / Not Implanted</div>
+      <div class="nav-item">⚠ Adverse Events</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>💉 Record Implant</h2><p>CASE-2024-0892 · Dr. Johnson · Total Knee Arthroplasty</p></div><span class="feature-tag">Feature 1 · MRI Alert</span></div>
+        <div class="mri-banner">
+          <div class="mri-icon">⚠️</div>
+          <div class="mri-text"><strong>MRI CONDITIONAL — Patient card required before any MRI scan</strong><span>Stryker Triathlon TKS · (01)00643169007234 · See Instructions for Use</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div class="fg" style="margin-bottom:6px"><label>Consignment ID</label><input class="filled" value="CONS-2024-4821" readonly style="font-family:'JetBrains Mono',monospace"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Patient MRN</label><input class="filled" value="MRN-•••••• (SHA-256 hashed)" readonly/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Surgeon</label><input class="filled" value="Dr. Marcus Johnson · NPI 1234567890"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Body Location</label><input class="filled" value="Left Knee — Total Arthroplasty"/></div>
+          </div>
+          <div>
+            <div class="fg" style="margin-bottom:6px"><label>Procedure Date</label><input class="filled" value="2024-11-21" readonly/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Serial Number</label><input class="filled" value="SER-2024-088-0047"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Lot Number</label><input class="filled" value="STR-2024-088" readonly style="font-family:'JetBrains Mono',monospace"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Notes</label><input class="filled" value="Procedure uneventful. Size 5 tibial tray used."/></div>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-g">⬡ Record on Blockchain</button>
+          <button class="btn btn-a btn-sm">Link to Case</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: NURSE — OPENED/NOT IMPLANTED + ADVERSE EVENT ════════ -->
+<div class="slide" id="s10">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ OR Nurse Portal</span></div>
+    <div class="topbar-user"><span>nurse1@implantchain.com</span><span class="role-pill rp-nurse">Nurse · Memorial Hospital</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">💉 Record Implant</div>
+      <div class="nav-item active">📦 Opened / Not Implanted</div>
+      <div class="nav-item">⚠ Adverse Events</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📦 Opened / Not Implanted</h2><p>Track opened sterile packages not used in procedure</p></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Record Opened Package</span></div>
+            <div class="fg" style="margin-bottom:6px"><label>Consignment</label><input class="filled" value="CONS-2024-4821"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Qty Opened</label><input class="filled-a" value="1" style="width:80px"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Reason</label><input class="filled-a" value="Wrong size — size 6 needed, size 5 opened"/></div>
+            <div class="fg" style="margin-bottom:8px"><label>Disposition</label><input class="filled-a" value="Returned to rep for credit"/></div>
+            <button class="btn btn-a">📋 Record Event</button>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Adverse Event Report</span><span class="badge br">MDR Trigger</span></div>
+            <div class="fg" style="margin-bottom:6px"><label>Implant ID</label><input class="filled" value="IMPL-2024-4801" style="font-family:'JetBrains Mono',monospace"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Event Type</label><input class="filled-a" value="⚠ Device Malfunction"/></div>
+            <div class="fg" style="margin-bottom:6px"><label>Description</label><input class="filled-a" value="Locking mechanism failure noted post-op"/></div>
+            <div class="fg" style="margin-bottom:8px"><label>Reported to FDA</label><input class="filled-a" value="Pending — MDR 30-day clock started"/></div>
+            <button class="btn btn-r">⚠ Submit Adverse Event</button>
+          </div>
+        </div>
+        <div class="tx-block amber-tx" style="margin-top:8px">
+          <div style="font-size:9px;color:#475569;margin-bottom:2px">BLOCKCHAIN TX · OPENED_NOT_IMPLANTED</div>
+          <div class="tx-id">CONS-2024-4821 · 1 unit opened · Wrong size · Returned to rep</div>
+          <div class="tx-meta">nurse1 · Memorial Hospital · 2024-11-21 · Inventory adjusted</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: RECALL — GOVERNMENT TRIGGERS ═══════════════════════ -->
+<div class="slide" id="s11">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Government Portal</span></div>
+    <div class="topbar-user"><span>government1@implantchain.com</span><span class="role-pill rp-gov">Government</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">🏛 Device Registry</div>
+      <div class="nav-item active">🚨 Recall Authority</div>
+      <div class="nav-item">📋 Clearances</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>🚨 Recall Lot</h2><p>Immediate recall with automatic hospital notification</p></div><span class="feature-tag">Feature 4 · Recall Workflow</span></div>
+        <div class="alert alert-red alert-pulse">🚨 <strong>CLASS II RECALL INITIATED</strong> — LOT-ZIM-2204 · ZimVac Hip Stem · Fracture risk under load</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Recall Details</span></div>
+            <div style="font-size:10.5px;color:#64748b;line-height:1.8">
+              <div style="display:flex;justify-content:space-between"><span>Lot Number</span><span style="color:#f87171;font-family:'JetBrains Mono',monospace">LOT-ZIM-2204</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Device</span><span style="color:#e2e8f0">ZimVac Hip Stem — 120mm</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Class</span><span style="color:#f87171;font-weight:700">Class II</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Reason</span><span style="color:#e2e8f0">Fracture risk under load</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Affected Units</span><span style="color:#f59e0b">67 distributed</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Patients Affected</span><span style="color:#f87171">34 implanted</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Automated Actions Triggered</span></div>
+            <div class="tl-item"><div class="tl-dot tl-g">⬡</div><div class="tl-text"><strong>Blockchain TX recorded</strong><span>Lot status → RECALLED · Immutable</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-r">📧</div><div class="tl-text"><strong>Email alerts sent to 8 IP officers</strong><span>All hospitals with active consignments</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-a">🔔</div><div class="tl-text"><strong>In-app alerts triggered</strong><span>Dashboard alert for affected hospitals</span></div></div>
+            <div class="tl-item"><div class="tl-dot tl-b">🔒</div><div class="tl-text"><strong>Consignments locked</strong><span>4 active consignments quarantined</span></div></div>
+          </div>
+        </div>
+        <div class="tx-block red-tx" style="margin-top:4px">
+          <div style="font-size:9px;color:#475569;margin-bottom:2px">BLOCKCHAIN TX · RECALL_LOT · 0x8f3a...c92d</div>
+          <div class="tx-id">government1 recalled LOT-ZIM-2204 · Class II · Fracture risk</div>
+          <div class="tx-meta">2024-11-21T14:32:08Z · Hyperledger Fabric · Channel: implantchainchannel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: RECALL — IP PATIENT LOOKUP + BULK NOTIFY ═══════════ -->
+<div class="slide" id="s12">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Infection Prevention Portal</span></div>
+    <div class="topbar-user"><span>infectionprev1@implantchain.com</span><span class="role-pill rp-ip">Infection Prevention</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Recalls</div>
+      <div class="nav-item active">🔍 Patient Lookup</div>
+      <div class="nav-item">📋 Notification Log</div>
+      <div class="nav-section">Alerts</div>
+      <div class="nav-item alert-item">🚨 Active Recalls (3)</div>
+      <div class="nav-item alert-item">⏰ MDR Deadlines (7)</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>🔍 Recall Patient Lookup</h2><p>LOT-ZIM-2204 · Scoped to Memorial Hospital</p></div><span class="feature-tag">Feature 4 · Bulk Notify</span></div>
+        <div class="alert alert-red alert-pulse">🚨 <strong>34 patients identified</strong> with recalled lot — notification required. Real-time patient data from blockchain.</div>
+        <table style="margin-bottom:8px">
+          <thead><tr><th>Implant ID</th><th>Patient MRN</th><th>Procedure</th><th>Surgeon</th><th>Date</th><th>Notification</th></tr></thead>
+          <tbody>
+            <tr><td>IMPL-4720</td><td style="color:#334155;font-family:'JetBrains Mono',monospace">MRN-••••12</td><td>Total Hip</td><td>Dr. Patel</td><td>2024-09-14</td><td><span class="badge bg">✓ Phone</span></td></tr>
+            <tr><td>IMPL-4721</td><td style="color:#334155;font-family:'JetBrains Mono',monospace">MRN-••••47</td><td>Total Hip</td><td>Dr. Johnson</td><td>2024-09-20</td><td><span class="badge bg">✓ Letter</span></td></tr>
+            <tr><td>IMPL-4738</td><td style="color:#334155;font-family:'JetBrains Mono',monospace">MRN-••••83</td><td>Total Hip</td><td>Dr. Chen</td><td>2024-10-01</td><td><span class="badge ba">⏳ Pending</span></td></tr>
+            <tr><td>IMPL-4742</td><td style="color:#334155;font-family:'JetBrains Mono',monospace">MRN-••••29</td><td>Total Hip</td><td>Dr. Patel</td><td>2024-10-08</td><td><span class="badge ba">⏳ Pending</span></td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-r">📬 Bulk Notify All Pending (32)</button>
+          <div style="font-size:10px;color:#334155;font-family:'JetBrains Mono',monospace">Each notification recorded on blockchain · HIPAA compliant · Patient IDs hashed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 13: FEATURE 5 — MDR DEADLINES ══════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Infection Prevention Portal</span></div>
+    <div class="topbar-user"><span>infectionprev1@implantchain.com</span><span class="role-pill rp-ip">Infection Prevention</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item alert-item">🚨 Active Recalls (3)</div>
+      <div class="nav-item active alert-item">⏰ MDR Deadlines (7)</div>
+      <div class="nav-item">📊 UDI Compliance</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>⏰ MDR 30-Day Deadline Tracker</h2><p>FDA MedWatch adverse event reporting deadlines</p></div><span class="feature-tag">Feature 5 · MDR Tracker</span></div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px">
+          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:#f87171">2</div><div style="font-size:8.5px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">OVERDUE</div></div>
+          <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:#fb923c">1</div><div style="font-size:8.5px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">CRITICAL</div></div>
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:#fbbf24">2</div><div style="font-size:8.5px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">WARNING</div></div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:#34d399">1</div><div style="font-size:8.5px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">SAFE</div></div>
+          <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:#60a5fa">1</div><div style="font-size:8.5px;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">REPORTED</div></div>
+        </div>
+        <table>
+          <thead><tr><th>Event ID</th><th>Implant</th><th>Event Type</th><th>Event Date</th><th>Deadline</th><th>Days Left</th><th>Urgency</th></tr></thead>
+          <tbody>
+            <tr><td>AE-2024-081</td><td>IMPL-4712</td><td>Serious Injury</td><td>Oct 18</td><td>Nov 17</td><td style="color:#f87171">-4 days</td><td><span class="badge urg-overdue">Overdue</span></td></tr>
+            <tr><td>AE-2024-082</td><td>IMPL-4738</td><td>Malfunction</td><td>Oct 22</td><td>Nov 21</td><td style="color:#f87171">0 days</td><td><span class="badge urg-overdue">Overdue</span></td></tr>
+            <tr><td>AE-2024-083</td><td>IMPL-4741</td><td>Imminent Hazard</td><td>Nov 17</td><td>Nov 22 <span style="font-size:8px;color:#f59e0b">5-day</span></td><td style="color:#fb923c">1 day</td><td><span class="badge urg-critical">Critical</span></td></tr>
+            <tr><td>AE-2024-085</td><td>IMPL-4750</td><td>Malfunction</td><td>Nov 01</td><td>Dec 01</td><td style="color:#fbbf24">10 days</td><td><span class="badge urg-warning">Warning</span></td></tr>
+            <tr><td>AE-2024-088</td><td>IMPL-4762</td><td>Malfunction</td><td>Nov 14</td><td>Dec 14</td><td style="color:#34d399">23 days</td><td><span class="badge urg-safe">Safe</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 14: FEATURE 3+9 — EXPIRY ALERTS ════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Supply Chain Portal</span></div>
+    <div class="topbar-user"><span>supplychain1@implantchain.com</span><span class="role-pill rp-sc">Supply Chain · Memorial Hospital</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">📅 OR Schedule</div>
+      <div class="nav-item active alert-item">⚠ Expiry Alerts (17)</div>
+      <div class="nav-item">📦 Consignments</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>⚠ Expiry Alerts</h2><p>Lot &amp; consignment expiry tracking — 90 day window</p></div><span class="feature-tag">Feature 3 · Feature 9</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:10px">
+            <div style="font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:4px">Critical ≤ 30 days</div>
+            <div style="font-size:22px;font-weight:700;color:#f87171">5</div>
+            <div style="font-size:9.5px;color:#475569;margin-top:2px">Immediate action required</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:7px;padding:10px">
+            <div style="font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:4px">Warning 31–90 days</div>
+            <div style="font-size:22px;font-weight:700;color:#fbbf24">12</div>
+            <div style="font-size:9.5px;color:#475569;margin-top:2px">Plan for replacement</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:7px;padding:10px">
+            <div style="font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:4px">Total Value at Risk</div>
+            <div style="font-size:22px;font-weight:700;color:#34d399">$84K</div>
+            <div style="font-size:9.5px;color:#475569;margin-top:2px">17 consignments</div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Device</th><th>Location</th><th>Qty</th><th>Expiry</th><th>Days Left</th><th>Level</th></tr></thead>
+          <tbody>
+            <tr><td>CONS-4815</td><td>Stryker Spine Rod</td><td>Spine OR · Cabinet A</td><td style="color:#e2e8f0">22</td><td style="color:#f87171">2025-03-08</td><td style="color:#f87171">107d → <strong>14d</strong></td><td><span class="badge br urg-critical">Critical</span></td></tr>
+            <tr><td>CONS-4802</td><td>Pedicle Screw Set</td><td>Ortho Stock</td><td style="color:#e2e8f0">8</td><td style="color:#f87171">2025-03-19</td><td style="color:#f87171">25 days</td><td><span class="badge br urg-critical">Critical</span></td></tr>
+            <tr><td>CONS-4788</td><td>ZimVac Hip Acetabular</td><td>OR-2 · Tray 2</td><td style="color:#e2e8f0">15</td><td style="color:#fbbf24">2025-05-11</td><td style="color:#fbbf24">78 days</td><td><span class="badge ba urg-warning">Warning</span></td></tr>
+            <tr><td>CONS-4791</td><td>Depuy Knee System</td><td>OR-1 · Shelf B</td><td style="color:#e2e8f0">10</td><td style="color:#fbbf24">2025-05-29</td><td style="color:#fbbf24">96 days</td><td><span class="badge ba urg-warning">Warning</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 15: FEATURE 6 — UDI COMPLIANCE ═════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Infection Prevention Portal</span></div>
+    <div class="topbar-user"><span>infectionprev1@implantchain.com</span><span class="role-pill rp-ip">Infection Prevention</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">⏰ MDR Deadlines</div>
+      <div class="nav-item active">📊 UDI Compliance</div>
+      <div class="nav-item">📋 Reports</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📊 UDI Compliance Report</h2><p>21 CFR Part 830 · EPCIS 2.0 · ISO 13485 · EU MDR</p></div><span class="feature-tag">Feature 6 · UDI Compliance</span></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
+          <div class="kpi green"><div class="kl">Overall Score</div><div class="kv">94%</div><div class="kpi-sub">↑ 3% vs last month</div></div>
+          <div class="kpi green"><div class="kl">Compliant</div><div class="kv">176</div><div class="kpi-sub">of 187 implants</div></div>
+          <div class="kpi amber"><div class="kl">Issues</div><div class="kv">11</div><div class="kpi-sub">Need correction</div></div>
+          <div class="kpi blue"><div class="kl">Hospitals</div><div class="kv">28</div><div class="kpi-sub">Reporting</div></div>
+        </div>
+        <table>
+          <thead><tr><th>Implant ID</th><th>UDI-DI</th><th>UDI-PI</th><th>Clearance</th><th>Lot Status</th><th>Score</th><th>Issues</th></tr></thead>
+          <tbody>
+            <tr><td>IMPL-4821</td><td style="color:#10b981">✓ Present</td><td style="color:#10b981">✓ Present</td><td style="color:#10b981">✓ Active</td><td style="color:#10b981">✓ Active</td><td style="color:#10b981;font-weight:700">100</td><td style="color:#475569">None</td></tr>
+            <tr><td>IMPL-4818</td><td style="color:#10b981">✓ Present</td><td style="color:#10b981">✓ Present</td><td style="color:#10b981">✓ Active</td><td style="color:#10b981">✓ Active</td><td style="color:#10b981;font-weight:700">100</td><td style="color:#475569">None</td></tr>
+            <tr><td>IMPL-4791</td><td style="color:#f87171">✗ Missing</td><td style="color:#f87171">✗ Missing</td><td style="color:#fbbf24">? Unverified</td><td style="color:#10b981">✓ Active</td><td style="color:#ef4444;font-weight:700">25</td><td style="color:#f87171">Missing UDI-DI, UDI-PI</td></tr>
+            <tr><td>IMPL-4788</td><td style="color:#10b981">✓ Present</td><td style="color:#fbbf24">⚠ Partial</td><td style="color:#10b981">✓ Active</td><td style="color:#10b981">✓ Active</td><td style="color:#fbbf24;font-weight:700">75</td><td style="color:#fbbf24">Incomplete UDI-PI</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: FEATURE 11 — HOSPITAL ONBOARDING ═══════════════════ -->
+<div class="slide" id="s16">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Admin Portal</span></div>
+    <div class="topbar-user"><span>admin@implantchain.com</span><span class="role-pill rp-admin">Admin</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">Administration</div>
+      <div class="nav-item">👥 User Management</div>
+      <div class="nav-item active">🏥 Onboarding</div>
+      <div class="nav-item">📈 Analytics</div>
+      <div class="nav-item">📋 Audit Log</div>
+      <div class="nav-item">📧 Email Log</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>🏥 Hospital Onboarding</h2><p>3-phase onboarding checklist per hospital</p></div><span class="feature-tag">Feature 11 · Onboarding</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Memorial Hospital</span><span class="badge bg">Phase 3</span></div>
+            <div class="pbar-bg" style="height:6px;margin-bottom:10px"><div class="pbar-fill" style="width:92%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>Admin user created &amp; configured</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>IP officers assigned to hospital</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>Surgeon list uploaded with NPI + license</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>First consignment received &amp; verified</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>First implant recorded by OR nurse</span></div>
+            <div class="check-item"><div class="check-box check-pend">□</div><span style="color:#475569">UDI compliance rate ≥80%</span></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Alpha Medical Center</span><span class="badge bc">Phase 2</span></div>
+            <div class="pbar-bg" style="height:6px;margin-bottom:10px"><div class="pbar-fill" style="width:58%;background:linear-gradient(90deg,#3b82f6,#38bdf8)"></div></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>Admin user created &amp; configured</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>IP officers assigned to hospital</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>Surgeon list uploaded</span></div>
+            <div class="check-item"><div class="check-box check-done">✓</div><span>First consignment received &amp; verified</span></div>
+            <div class="check-item"><div class="check-box check-pend">□</div><span style="color:#475569">First implant recorded by OR nurse</span></div>
+            <div class="check-item"><div class="check-box check-pend">□</div><span style="color:#475569">UDI compliance rate ≥80%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: FEATURE 12 — ANALYTICS ════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Admin Portal</span></div>
+    <div class="topbar-user"><span>admin@implantchain.com</span><span class="role-pill rp-admin">Admin</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item">👥 Users</div>
+      <div class="nav-item">🏥 Onboarding</div>
+      <div class="nav-item active">📈 Analytics</div>
+      <div class="nav-item">📋 Audit Log</div>
+      <div class="nav-item">📧 Email Log</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>📈 Usage Analytics</h2><p>Last 30 days · All hospitals · All roles</p></div><span class="feature-tag">Feature 12 · Analytics</span></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
+          <div class="kpi blue"><div class="kl">Total Actions</div><div class="kv">4,821</div><div class="kpi-sub">↑ 12% vs prev period</div></div>
+          <div class="kpi green"><div class="kl">Active Users</div><div class="kv">47</div><div class="kpi-sub">Across 28 hospitals</div></div>
+          <div class="kpi cyan"><div class="kl">Implants Recorded</div><div class="kv">312</div><div class="kpi-sub">This period</div></div>
+          <div class="kpi purple"><div class="kl">Blockchain TXs</div><div class="kv">1,204</div><div class="kpi-sub">All channels</div></td></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Top Users by Activity</span></div>
+            <table>
+              <thead><tr><th>User</th><th>Role</th><th>Actions</th><th>Share</th></tr></thead>
+              <tbody>
+                <tr><td>nurse1</td><td>Nurse</td><td style="color:#10b981">847</td><td><div class="pbar-bg" style="width:80px;margin:0"><div class="pbar-fill" style="width:70%;background:#10b981"></div></div></td></tr>
+                <tr><td>manufacturer1</td><td>Manufacturer</td><td style="color:#3b82f6">623</td><td><div class="pbar-bg" style="width:80px;margin:0"><div class="pbar-fill" style="width:52%;background:#3b82f6"></div></div></td></tr>
+                <tr><td>distributor1</td><td>Distributor</td><td style="color:#f59e0b">508</td><td><div class="pbar-bg" style="width:80px;margin:0"><div class="pbar-fill" style="width:42%;background:#f59e0b"></div></div></td></tr>
+                <tr><td>infectionprev1</td><td>IP Officer</td><td style="color:#ef4444">412</td><td><div class="pbar-bg" style="width:80px;margin:0"><div class="pbar-fill" style="width:34%;background:#ef4444"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="ct">Actions by Category</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:#64748b">Clinical (Implant/Explant)</span><span style="color:#10b981">1,847</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:78%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:#64748b">Government (Clearance/Recall)</span><span style="color:#8b5cf6">624</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:48%;background:linear-gradient(90deg,#7c3aed,#8b5cf6)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:#64748b">Manufacturing (Lot/QC)</span><span style="color:#3b82f6">892</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:58%;background:linear-gradient(90deg,#3b82f6,#38bdf8)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:#64748b">Recall Notifications</span><span style="color:#ef4444">248</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:28%;background:linear-gradient(90deg,#dc2626,#ef4444)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:#64748b">Distribution (Consignment)</span><span style="color:#f59e0b">1,210</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:65%;background:linear-gradient(90deg,#d97706,#f59e0b)"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 18: FEATURE 7 + 13 — AUDIT LOG + EMAIL ════════════════ -->
+<div class="slide" id="s18">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Admin Portal</span></div>
+    <div class="topbar-user"><span>admin@implantchain.com</span><span class="role-pill rp-admin">Admin</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item active">📋 Audit Log</div>
+      <div class="nav-item">📧 Email Log</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph">
+          <div class="ph-left"><h2>📋 Audit Trail</h2><p>Complete action history — immutable, filterable</p></div>
+          <div style="display:flex;gap:6px"><span class="feature-tag">Feature 7</span><span class="feature-tag">Feature 13</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div class="card-hdr" style="margin-bottom:6px"><span class="ct">Audit Log</span></div>
+            <table>
+              <thead><tr><th>Actor</th><th>Action</th><th>Target</th><th>Time</th></tr></thead>
+              <tbody>
+                <tr><td>government1</td><td style="color:#f87171">RECALL_LOT</td><td>LOT-ZIM-2204</td><td style="color:#334155">14:32</td></tr>
+                <tr><td>infectionprev1</td><td style="color:#fbbf24">BULK_NOTIFY</td><td>34 patients</td><td style="color:#334155">14:35</td></tr>
+                <tr><td>nurse1</td><td style="color:#34d399">RECORD_IMPLANT</td><td>IMPL-4821</td><td style="color:#334155">11:47</td></tr>
+                <tr><td>manufacturer1</td><td style="color:#60a5fa">RELEASE_LOT</td><td>STR-2024-088</td><td style="color:#334155">09:12</td></tr>
+                <tr><td>distributor1</td><td style="color:#a78bfa">CREATE_CONSIGN</td><td>CONS-4821</td><td style="color:#334155">08:44</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="card-hdr" style="margin-bottom:6px"><span class="ct">Email Notification Log</span></div>
+            <table>
+              <thead><tr><th>Type</th><th>Recipients</th><th>Trigger</th><th>Time</th></tr></thead>
+              <tbody>
+                <tr><td style="color:#f87171">RECALL_ALERT</td><td>8 IP officers</td><td>LOT-ZIM recall</td><td style="color:#334155">14:32</td></tr>
+                <tr><td style="color:#fbbf24">MDR_REMINDER</td><td>infectionprev1</td><td>AE-2024-081 overdue</td><td style="color:#334155">09:00</td></tr>
+                <tr><td style="color:#34d399">WELCOME</td><td>nurse3@alpha.com</td><td>Account created</td><td style="color:#334155">Yesterday</td></tr>
+                <tr><td style="color:#fbbf24">ADVERSE_EVENT</td><td>3 IP officers</td><td>AE-2024-088</td><td style="color:#334155">Yesterday</td></tr>
+                <tr><td style="color:#60a5fa">TEST_EMAIL</td><td>admin@impl..</td><td>Manual test</td><td style="color:#334155">Nov 18</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="alert alert-green" style="margin-top:6px">✓ All actions cryptographically logged · Tamper-evident · Exportable for compliance audits</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 19: BLOCKCHAIN HISTORY ═════════════════════════════════ -->
+<div class="slide" id="s19">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Blockchain History</span></div>
+    <div class="topbar-user"><span>government1@implantchain.com</span><span class="role-pill rp-gov">Government</span></div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item active">⛓ Chain History</div>
+      <div class="nav-item">🔍 Asset Lookup</div>
+    </div>
+    <div class="main">
+      <div class="page">
+        <div class="ph"><div class="ph-left"><h2>⛓ Device History — (01)00643169007234</h2><p>Complete immutable blockchain history · Stryker Triathlon TKS</p></div></div>
+        <div class="chain" style="margin-bottom:14px">
+          <div class="step"><div class="step-dot done">🏛</div><div class="step-label">FDA Register</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">📋</div><div class="step-label">510(k) Clear</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">📜</div><div class="step-label">ISO 13485</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">📦</div><div class="step-label">Lot Created</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">🔬</div><div class="step-label">QC Release</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">🚚</div><div class="step-label">Consigned</div></div>
+          <div class="step-connector"></div>
+          <div class="step"><div class="step-dot done">💉</div><div class="step-label">Implanted</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="tx-block"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #1 · REGISTER_DEVICE</div><div class="tx-id">0x2a1b...7c3d</div><div class="tx-meta">government1 · 2024-01-15 · K193629 issued</div></div>
+          <div class="tx-block green-tx"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #2 · ISSUE_CLEARANCE</div><div class="tx-id">0x4f8e...b1a9</div><div class="tx-meta">510(k) · 21 CFR Part 830 · Active</div></div>
+          <div class="tx-block"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #3 · UPLOAD_ISO_13485</div><div class="tx-id">0x9c2d...e74f</div><div class="tx-meta">BSI Group · Valid 2024–2027</div></div>
+          <div class="tx-block"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #4 · CREATE_LOT</div><div class="tx-id">0x1e5a...f8b2</div><div class="tx-meta">STR-2024-088 · 150 units · Quarantine</div></div>
+          <div class="tx-block green-tx"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #5 · RELEASE_LOT</div><div class="tx-id">0x7d3c...a214</div><div class="tx-meta">QC passed · Active · 150 units</div></div>
+          <div class="tx-block"><div style="font-size:9px;color:#475569;margin-bottom:2px">TX #6 · RECORD_IMPLANT</div><div class="tx-id">0x5b8f...d392</div><div class="tx-meta">IMPL-4821 · MRN hash · Dr. Johnson</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 20: PUBLIC VERIFICATION ════════════════════════════════ -->
+<div class="slide" id="s20">
+  <div class="topbar">
+    <div class="topbar-brand">⬡ ImplantChain <span style="color:#334155;font-weight:400;margin-left:4px">/ Public Verification</span></div>
+    <div class="topbar-user"><span style="color:#334155">No login required</span></div>
+  </div>
+  <div class="main" style="width:100%">
+    <div class="page">
+      <div class="ph"><div class="ph-left"><h2>🔍 Public Device Verification</h2><p>Verify any device or lot — no login required</p></div></div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div class="fg" style="flex:1"><label>UDI-DI or Lot Number</label><input class="filled" value="(01)00643169007234" readonly style="font-family:'JetBrains Mono',monospace"/></div>
+          <button class="btn btn-p">🔍 Verify on Blockchain</button>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(16,185,129,0.35);border-width:2px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">✅</div>
+          <div><div style="font-size:14px;font-weight:700;color:#10b981">Authentic Device — Registered on Blockchain</div><div style="font-size:9.5px;color:#334155;font-family:'JetBrains Mono',monospace">(01)00643169007234 · Verified 2024-11-21T15:04:22Z</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">Device Name</div><div style="font-size:11.5px;color:#e2e8f0;font-weight:500">Stryker Triathlon TKS</div></div>
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">Manufacturer</div><div style="font-size:11.5px;color:#e2e8f0;font-weight:500">Stryker Corporation</div></div>
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">FDA Clearance</div><div style="font-size:11.5px;color:#10b981;font-weight:600">510(k) K193629 · Active</div></div>
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">ISO 13485</div><div style="font-size:11.5px;color:#10b981;font-weight:600">Valid · BSI Group · 2027</div></div>
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">MRI Safety</div><div style="font-size:11.5px;color:#f59e0b;font-weight:500">⚠ Conditional</div></div>
+          <div style="background:#080f20;border-radius:6px;padding:8px"><div style="font-size:8.5px;color:#334155;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px">Recall Status</div><div style="font-size:11.5px;color:#10b981;font-weight:600">✓ No Active Recalls</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 21: COMPLIANCE STANDARDS ══════════════════════════════ -->
+<div class="slide" id="s21" style="background:radial-gradient(ellipse at 70% 30%,#0f1e38 0%,#03060f 60%)">
+  <div style="padding:32px 40px;height:100%;display:flex;flex-direction:column;justify-content:center">
+    <div style="font-size:11px;color:#38bdf8;font-family:'JetBrains Mono',monospace;letter-spacing:0.15em;margin-bottom:16px">COMPLIANCE &amp; STANDARDS</div>
+    <div style="font-size:24px;font-weight:800;color:#e2e8f0;margin-bottom:20px;letter-spacing:-0.5px">Built for regulated healthcare</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:6px">21 CFR Part 830</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">FDA UDI system · Device identification &amp; traceability</div>
+      </div>
+      <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:6px">ISO 13485:2016</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">Medical device QMS · Certificate verification on-chain</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">HIPAA Compliant</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">Patient MRN SHA-256 hashed · Never stored in plaintext</div>
+      </div>
+      <div style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:6px">EU MDR 2017/745</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">European Medical Device Regulation traceability</div>
+      </div>
+      <div style="background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#22d3ee;margin-bottom:6px">EPCIS 2.0</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">Electronic Product Code Information Services standard</div>
+      </div>
+      <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:6px">21 CFR Part 803</div>
+        <div style="font-size:10px;color:#475569;line-height:1.6">MDR 30-day deadline tracker built into workflow</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:#334155;font-family:'JetBrains Mono',monospace;text-align:center">Hyperledger Fabric 2.5 · Permissioned blockchain · Private channels · Endorsement policies</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 22: END CARD ════════════════════════════════════════════ -->
+<div class="slide" id="s22" style="background:radial-gradient(ellipse at 30% 60%,#0f1e38 0%,#03060f 60%);align-items:center;justify-content:center">
+  <div style="text-align:center;padding:32px;max-width:700px">
+    <div style="font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 28px rgba(56,189,248,0.5))">⬡</div>
+    <div class="brand-display">
+              <span class="brand-solid">Implant</span
+              ><span class="brand-outline">Chain</span>
+            </div>
+    <div style="font-size:11px;color:#38bdf8;font-family:'JetBrains Mono',monospace;letter-spacing:0.18em;margin-bottom:24px">SURGICAL IMPLANT TRACEABILITY · LIVE IN PRODUCTION</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px;text-align:left">
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:6px">🚨 Recall response</div>
+        <div style="font-size:10.5px;color:#475569">3–7 days manual → <strong style="color:#10b981">real-time</strong> patient lookup &amp; bulk notification</div>
+      </div>
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:6px">⛓ Chain of Custody</div>
+        <div style="font-size:10.5px;color:#475569">FDA clearance → manufacturer → OR table → patient — every step on blockchain</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:6px">⏰ MDR Compliance</div>
+        <div style="font-size:10.5px;color:#475569">Automated 30-day deadline tracker — adverse events never fall through the cracks</div>
+      </div>
+      <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:6px">🏥 7 Roles</div>
+        <div style="font-size:10.5px;color:#475569">FDA · Manufacturer · Distributor · Supply Chain · OR Nurse · IP Officer · Admin</div>
+      </div>
+    </div>
+    <div style="font-size:14px;color:#38bdf8;font-weight:700;margin-bottom:4px">implantchain.dapparchitects.com</div>
+    <div style="font-size:10px;color:#334155;font-family:'JetBrains Mono',monospace">faruk.ansari@dapparchitects.com · dapparchitects.com · Built on Hyperledger Fabric 2.5</div>
+  </div>
+</div>
+
+</div><!-- /screen -->
+<div class="controls">
+  <button class="cbtn" onclick="changeSlide(-1)">◀</button>
+  <button class="cbtn play" id="playBtn" onclick="togglePlay()">⏸</button>
+  <button class="cbtn" onclick="changeSlide(1)">▶</button>
+  <div id="prog-o"><div id="prog-i"></div></div>
+  <div id="sinfo">Loading...</div>
+</div>
+</div>
+
+<script>
+const SLIDES = document.querySelectorAll('.slide');
+const DURATIONS = [4500,6000,6500,6500,6000,6000,6000,6500,6500,6000,6500,6500,6500,6000,6500,6000,6500,6000,6000,5500,6000,6000];
+const LABELS = [
+  'Title','Dashboard Overview','FDA — Device Registry',
+  'Manufacturer — ISO 13485 + Lot Management','Distributor — Consignment Management',
+  'Feature 2 — QR Code Verification','Feature 10 — Rep Visit Log',
+  'Feature 8 — OR Scheduling / Today\'s Cases','Feature 1 — OR Nurse · MRI Safety Alert',
+  'OR Nurse — Opened/Not Implanted + Adverse Events','Feature 4 — Government Initiates Recall',
+  'Feature 4 — IP Officer Patient Lookup + Bulk Notify','Feature 5 — MDR 30-Day Deadline Tracker',
+  'Feature 3 + 9 — Expiry Alerts','Feature 6 — UDI Compliance Report',
+  'Feature 11 — Hospital Onboarding Checklist','Feature 12 — Usage Analytics',
+  'Feature 7 + 13 — Audit Log + Email Notifications','Blockchain — Immutable History',
+  'Public Device Verification','Compliance Standards','Summary'
+];
+let cur=0, playing=true, progTimer=null, start=0;
+
+function showSlide(n){
+  SLIDES[cur].classList.remove('active');
+  cur=(n+SLIDES.length)%SLIDES.length;
+  SLIDES[cur].classList.add('active');
+  document.getElementById('sinfo').textContent=`${LABELS[cur]}  ·  ${cur+1} / ${SLIDES.length}`;
+  if(playing) startTimer();
+}
+
+function startTimer(){
+  clearInterval(progTimer);
+  start=Date.now();
+  const dur=DURATIONS[cur];
+  document.getElementById('prog-i').style.width='0%';
+  progTimer=setInterval(()=>{
+    const el=Date.now()-start;
+    document.getElementById('prog-i').style.width=Math.min(100,(el/dur)*100)+'%';
+    if(el>=dur){ clearInterval(progTimer); showSlide(cur+1); }
+  },80);
+}
+
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('playBtn');
+  if(playing){ btn.textContent='⏸'; btn.className='cbtn pause'; startTimer(); }
+  else{ clearInterval(progTimer); btn.textContent='▶'; btn.className='cbtn play'; }
+}
+
+function changeSlide(d){ clearInterval(progTimer); showSlide(cur+d); }
+
+document.getElementById('sinfo').textContent=`${LABELS[0]}  ·  1 / ${SLIDES.length}`;
+startTimer();
+</script>
+</body>
+</html>

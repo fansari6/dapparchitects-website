@@ -1,0 +1,2428 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PharmaChain — Demo</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #050912;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      /* --- Application Name --- */
+      @font-face {
+        font-family: 'DesignerBlock';
+        src: url('/fonts/DESIB___.TTF') format('truetype');
+        font-display: swap;
+      }
+      .brand-display {
+        font-family: 'DesignerBlock', sans-serif;
+        font-size: 45px;
+        line-height: 1;
+        margin-bottom: 14px;
+        letter-spacing: 3px;
+      }
+      .brand-solid {
+        color: #ff8000;
+      }
+      .brand-outline {
+        color: transparent;
+        -webkit-text-stroke: 2.5px #ff8000;
+        text-stroke: 2.5px #ff8000;
+      }
+      #demo {
+        width: 100%;
+        max-width: 860px;
+        background: #080d18;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow:
+          0 32px 80px rgba(0, 0, 0, 0.9),
+          0 0 0 1px rgba(16, 185, 129, 0.08);
+      }
+      #screen {
+        min-height: 540px;
+        position: relative;
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+      }
+      .slide.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      /* ── LAYOUT ── */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 18px;
+        background: #0a1020;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        flex-shrink: 0;
+      }
+      .topbar-brand {
+        font-size: 13px;
+        font-weight: 700;
+        color: #10b981;
+        font-family: 'IBM Plex Mono', monospace;
+        letter-spacing: 0.05em;
+      }
+      .topbar-user {
+        font-size: 10px;
+        color: #4a6080;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .app-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 175px;
+        background: #060c18;
+        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        padding: 8px 0;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        font-size: 11px;
+        color: #4a6080;
+        margin: 1px 6px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .nav-item.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-left: 2px solid #10b981;
+      }
+      .ni {
+        font-size: 13px;
+        width: 16px;
+        text-align: center;
+      }
+      .main {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .page {
+        flex: 1;
+        padding: 18px 20px;
+        overflow: hidden;
+      }
+      .ph {
+        margin-bottom: 14px;
+      }
+      .ph h2 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #ecfdf5;
+        letter-spacing: -0.3px;
+      }
+      .ph p {
+        font-size: 11px;
+        color: #4a6080;
+        margin-top: 2px;
+      }
+
+      /* ── KPIs ── */
+      .kpi-grid {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .kpi {
+        background: #0c1425;
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 8px;
+        padding: 10px 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+      }
+      .kpi.green::after {
+        background: linear-gradient(90deg, #059669, #10b981);
+      }
+      .kpi.teal::after {
+        background: linear-gradient(90deg, #0d9488, #2dd4bf);
+      }
+      .kpi.blue::after {
+        background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+      }
+      .kpi.amber::after {
+        background: linear-gradient(90deg, #b45309, #f59e0b);
+      }
+      .kpi.red::after {
+        background: linear-gradient(90deg, #b91c1c, #ef4444);
+      }
+      .kpi.purple::after {
+        background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+      }
+      .kl {
+        font-size: 9px;
+        color: #2d3f5a;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .kv {
+        font-size: 22px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      .kpi.green .kv {
+        color: #10b981;
+      }
+      .kpi.teal .kv {
+        color: #2dd4bf;
+      }
+      .kpi.blue .kv {
+        color: #3b82f6;
+      }
+      .kpi.amber .kv {
+        color: #f59e0b;
+      }
+      .kpi.red .kv {
+        color: #ef4444;
+      }
+      .kpi.purple .kv {
+        color: #8b5cf6;
+      }
+
+      /* ── CARDS ── */
+      .card {
+        background: #0c1425;
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 10px;
+      }
+      .card-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .ct {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #ecfdf5;
+      }
+
+      /* ── BADGES ── */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 9.5px;
+        font-weight: 700;
+        font-family: 'IBM Plex Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .bg {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+      }
+      .bt {
+        background: rgba(45, 212, 191, 0.15);
+        color: #2dd4bf;
+      }
+      .bb {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+      }
+      .ba {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+      }
+      .br {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+      .bp {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+      }
+      .bw {
+        background: rgba(148, 163, 184, 0.15);
+        color: #94a3b8;
+      }
+
+      /* ── TABLES ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      thead th {
+        text-align: left;
+        padding: 6px 10px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #2d3f5a;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      tbody tr {
+        border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody td {
+        padding: 7px 10px;
+        color: #516888;
+      }
+      tbody td:first-child {
+        color: #ecfdf5;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+      }
+
+      /* ── FORMS ── */
+      .fg label {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        color: #4a6080;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 4px;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .fg input,
+      .fg select {
+        width: 100%;
+        background: #0a1020;
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        border-radius: 6px;
+        color: #ecfdf5;
+        padding: 6px 9px;
+        font-size: 11px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        outline: none;
+      }
+      .fg input.filled {
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #10b981;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+      .btn-p {
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #fff;
+      }
+      .btn-t {
+        background: linear-gradient(135deg, #0d9488, #2dd4bf);
+        color: #fff;
+      }
+      .btn-b {
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+        color: #fff;
+      }
+      .btn-a {
+        background: linear-gradient(135deg, #b45309, #f59e0b);
+        color: #fff;
+      }
+      .btn-r {
+        background: linear-gradient(135deg, #b91c1c, #ef4444);
+        color: #fff;
+      }
+
+      /* ── ALERTS ── */
+      .alert {
+        padding: 8px 12px;
+        border-radius: 7px;
+        font-size: 11px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .alert-red {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #f87171;
+      }
+      .alert-green {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+      }
+      .alert-amber {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #fcd34d;
+      }
+
+      /* ── TX BLOCK ── */
+      .tx-block {
+        background: #0a1020;
+        border-radius: 8px;
+        padding: 10px 12px;
+        border-left: 3px solid #10b981;
+        margin-bottom: 8px;
+      }
+      .tx-id {
+        font-size: 10px;
+        color: #2dd4bf;
+        font-family: 'IBM Plex Mono', monospace;
+        word-break: break-all;
+      }
+      .tx-meta {
+        font-size: 10px;
+        color: #2d3f5a;
+        margin-top: 3px;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      /* ── PROGRESS ── */
+      .pbar-bg {
+        height: 5px;
+        background: #0c1425;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+      .pbar-fill {
+        height: 100%;
+        border-radius: 3px;
+      }
+
+      /* ── PILL STATUS ── */
+      .supply-step {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .ss {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex: 1;
+      }
+      .ss-dot {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .ss-dot.done {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid #10b981;
+      }
+      .ss-dot.now {
+        background: rgba(45, 212, 191, 0.2);
+        border: 2px solid #2dd4bf;
+        box-shadow: 0 0 16px rgba(45, 212, 191, 0.3);
+      }
+      .ss-dot.wait {
+        background: #0c1425;
+        border: 2px solid rgba(16, 185, 129, 0.15);
+      }
+      .ss-lbl {
+        font-size: 9px;
+        color: #4a6080;
+        text-align: center;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .ss-con {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, #10b981, rgba(45, 212, 191, 0.2));
+        margin-top: -15px;
+      }
+
+      /* ── CONTROLS ── */
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #060c18;
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+      }
+      .cbtn {
+        background: transparent;
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        color: #4a6080;
+        padding: 5px 14px;
+        border-radius: 5px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        transition: all 0.15s;
+      }
+      .cbtn:hover {
+        background: rgba(16, 185, 129, 0.08);
+        color: #ecfdf5;
+      }
+      .cbtn.play {
+        background: linear-gradient(135deg, #059669, #10b981);
+        border-color: transparent;
+        color: #fff;
+      }
+      .cbtn.pause {
+        background: linear-gradient(135deg, #b91c1c, #ef4444);
+        border-color: transparent;
+        color: #fff;
+      }
+      #sinfo {
+        font-size: 10px;
+        color: #2d3f5a;
+        font-family: 'IBM Plex Mono', monospace;
+        min-width: 220px;
+        text-align: center;
+      }
+      #prog-o {
+        flex: 1;
+        height: 3px;
+        background: #0c1425;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      #prog-i {
+        height: 100%;
+        background: linear-gradient(90deg, #059669, #10b981);
+        width: 0%;
+        transition: width 0.08s linear;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-up {
+        animation: fadeUp 0.5s ease forwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="demo">
+      <div id="screen">
+        <!-- ══ SLIDE 0: TITLE ══════════════════════════════════════════ -->
+        <div
+          class="slide active"
+          id="s0"
+          style="
+            background: linear-gradient(
+              135deg,
+              #030610 0%,
+              #060c1a 50%,
+              #0a1020 100%
+            );
+            align-items: center;
+            justify-content: center;
+            min-height: 540px;
+          "
+        >
+          <div
+            style="
+              text-align: center;
+              padding: 40px 32px;
+              max-width: 600px;
+              margin: 0 auto;
+            "
+          >
+            <div
+              style="
+                font-size: 54px;
+                margin-bottom: 16px;
+                filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.6));
+              "
+            >
+              💊
+            </div>
+            <div class="brand-display">
+              <span class="brand-solid">Pharma</span
+              ><span class="brand-outline">Chain</span>
+            </div>
+            <div
+              style="
+                font-size: 12px;
+                color: #10b981;
+                font-family: 'IBM Plex Mono', monospace;
+                letter-spacing: 0.12em;
+                margin-bottom: 30px;
+              "
+            >
+              PHARMACEUTICAL SUPPLY CHAIN · HYPERLEDGER FABRIC 2.5
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-bottom: 28px;
+              "
+            >
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">🏛</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #10b981;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Government / FDA
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(45, 212, 191, 0.06);
+                  border: 1px solid rgba(45, 212, 191, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">🏭</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #2dd4bf;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Manufacturer
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(59, 130, 246, 0.06);
+                  border: 1px solid rgba(59, 130, 246, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">🚚</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #3b82f6;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Distributor
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(245, 158, 11, 0.06);
+                  border: 1px solid rgba(245, 158, 11, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">🩺</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #f59e0b;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Doctor
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(139, 92, 246, 0.06);
+                  border: 1px solid rgba(139, 92, 246, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">💊</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #8b5cf6;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Pharmacy
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(148, 163, 184, 0.06);
+                  border: 1px solid rgba(148, 163, 184, 0.15);
+                  border-radius: 10px;
+                  padding: 12px 8px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 20px; margin-bottom: 5px">👤</div>
+                <div
+                  style="
+                    font-size: 9.5px;
+                    color: #94a3b8;
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                >
+                  Patient / Citizen
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                display: inline-flex;
+                gap: 24px;
+                padding: 12px 24px;
+                background: rgba(16, 185, 129, 0.06);
+                border: 1px solid rgba(16, 185, 129, 0.12);
+                border-radius: 10px;
+                margin-bottom: 20px;
+              "
+            >
+              <div style="text-align: center">
+                <div
+                  style="
+                    font-size: 9px;
+                    color: #2d3f5a;
+                    font-family: 'IBM Plex Mono', monospace;
+                    margin-bottom: 3px;
+                  "
+                >
+                  PLATFORM
+                </div>
+                <div style="font-size: 12px; color: #10b981; font-weight: 600">
+                  Hyperledger Fabric 2.5
+                </div>
+              </div>
+              <div style="text-align: center">
+                <div
+                  style="
+                    font-size: 9px;
+                    color: #2d3f5a;
+                    font-family: 'IBM Plex Mono', monospace;
+                    margin-bottom: 3px;
+                  "
+                >
+                  STANDARDS
+                </div>
+                <div style="font-size: 12px; color: #10b981; font-weight: 600">
+                  GS1 · DSCSA · WHO
+                </div>
+              </div>
+              <div style="text-align: center">
+                <div
+                  style="
+                    font-size: 9px;
+                    color: #2d3f5a;
+                    font-family: 'IBM Plex Mono', monospace;
+                    margin-bottom: 3px;
+                  "
+                >
+                  NETWORK
+                </div>
+                <div style="font-size: 12px; color: #10b981; font-weight: 600">
+                  mychannel · pharma
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #2d3f5a;
+                font-family: 'IBM Plex Mono', monospace;
+              "
+            >
+              https://www.dapparchitects.com
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 1: DASHBOARD ══════════════════════════════════════ -->
+        <div class="slide" id="s1">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user">government1 · Government / FDA</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">⬡</span>Dashboard
+              </div>
+              <div class="nav-item"><span class="ni">🏛</span>Government</div>
+              <div class="nav-item"><span class="ni">🏭</span>Manufacturer</div>
+              <div class="nav-item"><span class="ni">🚚</span>Distributor</div>
+              <div class="nav-item"><span class="ni">🩺</span>Doctor</div>
+              <div class="nav-item"><span class="ni">💊</span>Pharmacy</div>
+              <div class="nav-item"><span class="ni">👤</span>Patient</div>
+              <div class="nav-item">
+                <span class="ni">🔍</span>Verify Medicine
+              </div>
+              <div class="nav-item">
+                <span class="ni">📋</span>Chain History
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>Dashboard</h2>
+                  <p>Welcome back, government1 · FDA / Government</p>
+                </div>
+                <div
+                  class="kpi-grid"
+                  style="grid-template-columns: repeat(4, 1fr)"
+                >
+                  <div class="kpi green">
+                    <div class="kl">Drug Types</div>
+                    <div class="kv">18</div>
+                  </div>
+                  <div class="kpi teal">
+                    <div class="kl">Active Licenses</div>
+                    <div class="kv">14</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Active Batches</div>
+                    <div class="kv">63</div>
+                  </div>
+                  <div class="kpi purple">
+                    <div class="kl">Prescriptions</div>
+                    <div class="kv">241</div>
+                  </div>
+                  <div class="kpi teal">
+                    <div class="kl">Dispensed</div>
+                    <div class="kv">189</div>
+                  </div>
+                  <div class="kpi amber">
+                    <div class="kl">In Transit</div>
+                    <div class="kv">8</div>
+                  </div>
+                  <div class="kpi red">
+                    <div class="kl">Recalled</div>
+                    <div class="kv">1</div>
+                  </div>
+                  <div class="kpi green">
+                    <div class="kl">At Pharmacy</div>
+                    <div class="kv">54</div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">💊 Drug Supply Chain Status</span
+                    ><span class="badge bg">Live</span>
+                  </div>
+                  <div class="supply-step" style="margin-bottom: 10px">
+                    <div class="ss">
+                      <div class="ss-dot done">🏭</div>
+                      <div class="ss-lbl">Manufacture</div>
+                    </div>
+                    <div class="ss-con"></div>
+                    <div class="ss">
+                      <div class="ss-dot done">📋</div>
+                      <div class="ss-lbl">License</div>
+                    </div>
+                    <div class="ss-con"></div>
+                    <div class="ss">
+                      <div class="ss-dot done">📦</div>
+                      <div class="ss-lbl">Batch</div>
+                    </div>
+                    <div class="ss-con"></div>
+                    <div class="ss">
+                      <div class="ss-dot done">🚚</div>
+                      <div class="ss-lbl">Ship</div>
+                    </div>
+                    <div class="ss-con"></div>
+                    <div class="ss">
+                      <div class="ss-dot now">💊</div>
+                      <div class="ss-lbl">Pharmacy</div>
+                    </div>
+                    <div
+                      class="ss-con"
+                      style="background: rgba(16, 185, 129, 0.1)"
+                    ></div>
+                    <div class="ss">
+                      <div class="ss-dot wait">📝</div>
+                      <div class="ss-lbl">Prescribe</div>
+                    </div>
+                    <div
+                      class="ss-con"
+                      style="background: rgba(16, 185, 129, 0.1)"
+                    ></div>
+                    <div class="ss">
+                      <div class="ss-dot wait">👤</div>
+                      <div class="ss-lbl">Dispense</div>
+                    </div>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Batch ID</th>
+                        <th>Drug</th>
+                        <th>Manufacturer</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Chain Step</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>BATCH-STR-2024-047</td>
+                        <td style="color: #ecfdf5">Amoxicillin 500mg</td>
+                        <td>PharmaCo Ltd</td>
+                        <td>10,000</td>
+                        <td><span class="badge bg">AT_PHARMACY</span></td>
+                        <td style="color: #10b981; font-size: 10px">
+                          Dispensing
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>BATCH-STR-2024-052</td>
+                        <td style="color: #ecfdf5">Metformin 850mg</td>
+                        <td>BioMed Inc</td>
+                        <td>5,000</td>
+                        <td><span class="badge bt">IN_TRANSIT</span></td>
+                        <td style="color: #2dd4bf; font-size: 10px">
+                          Shipping
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>BATCH-STR-2024-031</td>
+                        <td style="color: #ecfdf5">Lisinopril 10mg</td>
+                        <td>PharmaCo Ltd</td>
+                        <td>8,000</td>
+                        <td><span class="badge br">RECALLED</span></td>
+                        <td style="color: #ef4444; font-size: 10px">
+                          ⚠ Recall
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 2: GOVERNMENT – DRUG REGISTRATION + LICENSE ══════ -->
+        <div class="slide" id="s2">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user">government1 · Government / FDA</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item"><span class="ni">⬡</span>Dashboard</div>
+              <div class="nav-item active">
+                <span class="ni">🏛</span>Government
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>🏛 Government / FDA Portal</h2>
+                  <p>
+                    Register drug types · Issue manufacturing licenses · Manage
+                    recalls
+                  </p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">💊 Register Drug Type</span
+                      ><span class="badge bg">On Blockchain</span>
+                    </div>
+                    <div style="display: grid; gap: 8px">
+                      <div class="fg">
+                        <label>Drug ID</label
+                        ><input
+                          class="filled"
+                          value="DRUG-AMOX-500"
+                          readonly
+                          style="font-family: 'IBM Plex Mono', monospace"
+                        />
+                      </div>
+                      <div class="fg">
+                        <label>Drug Name</label
+                        ><input
+                          class="filled"
+                          value="Amoxicillin 500mg Capsules"
+                          readonly
+                        />
+                      </div>
+                      <div class="fg">
+                        <label>Manufacturer</label
+                        ><input class="filled" value="PharmaCo Ltd" readonly />
+                      </div>
+                      <div
+                        class="fg"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 8px;
+                          padding-top: 4px;
+                        "
+                      >
+                        <label style="margin-bottom: 0"
+                          >Requires Prescription</label
+                        ><input
+                          type="checkbox"
+                          checked
+                          style="width: auto; margin-left: 4px"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      class="btn btn-p"
+                      style="margin-top: 10px; font-size: 11px"
+                    >
+                      + Register Drug
+                    </button>
+                  </div>
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">📋 Issue Manufacturing License</span>
+                    </div>
+                    <div style="display: grid; gap: 8px">
+                      <div class="fg">
+                        <label>License ID</label
+                        ><input
+                          class="filled"
+                          value="LIC-PHARMACO-2024-001"
+                          readonly
+                          style="font-family: 'IBM Plex Mono', monospace"
+                        />
+                      </div>
+                      <div class="fg">
+                        <label>Manufacturer</label
+                        ><input class="filled" value="PharmaCo Ltd" readonly />
+                      </div>
+                      <div class="fg">
+                        <label>Drug</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>DRUG-AMOX-500 — Amoxicillin 500mg</option>
+                        </select>
+                      </div>
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 1fr 1fr;
+                          gap: 8px;
+                        "
+                      >
+                        <div class="fg">
+                          <label>Issue Date</label
+                          ><input class="filled" value="2024-01-15" readonly />
+                        </div>
+                        <div class="fg">
+                          <label>Expiry Date</label
+                          ><input class="filled" value="2027-01-14" readonly />
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      class="btn btn-p"
+                      style="margin-top: 10px; font-size: 11px"
+                    >
+                      📋 Issue License
+                    </button>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">Active Licenses</span
+                    ><span class="badge bg">14 active</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>License ID</th>
+                        <th>Manufacturer</th>
+                        <th>Drug</th>
+                        <th>Issue Date</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>LIC-PHARMACO-2024-001</td>
+                        <td>PharmaCo Ltd</td>
+                        <td>Amoxicillin 500mg</td>
+                        <td>2024-01-15</td>
+                        <td style="color: #10b981">2027-01-14</td>
+                        <td><span class="badge bg">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>LIC-BIOMED-2024-003</td>
+                        <td>BioMed Inc</td>
+                        <td>Metformin 850mg</td>
+                        <td>2024-03-01</td>
+                        <td style="color: #10b981">2027-02-28</td>
+                        <td><span class="badge bg">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>LIC-PHARMACO-2023-009</td>
+                        <td>PharmaCo Ltd</td>
+                        <td>Lisinopril 10mg</td>
+                        <td>2023-06-20</td>
+                        <td style="color: #ef4444">2024-06-19</td>
+                        <td><span class="badge br">Expired</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 3: MANUFACTURER – BATCH + SHIP ════════════════════ -->
+        <div class="slide" id="s3">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user"
+              >manufacturer1 · Manufacturer · PharmaCo Ltd</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">🏭</span>Manufacturer
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>🏭 Manufacturer Portal</h2>
+                  <p>Create drug batches · Ship to pharmacies · Flag recalls</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">📦 Create Drug Batch</span
+                      ><span class="badge ba">Requires valid license</span>
+                    </div>
+                    <div style="display: grid; gap: 8px">
+                      <div class="fg">
+                        <label>Batch ID</label
+                        ><input
+                          class="filled"
+                          value="BATCH-STR-2024-061"
+                          readonly
+                          style="font-family: 'IBM Plex Mono', monospace"
+                        />
+                      </div>
+                      <div class="fg">
+                        <label>Drug</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>DRUG-AMOX-500 — Amoxicillin 500mg</option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label>License</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>LIC-PHARMACO-2024-001 (valid)</option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label>Quantity (units)</label
+                        ><input class="filled" value="10,000" readonly />
+                      </div>
+                    </div>
+                    <button
+                      class="btn btn-p"
+                      style="margin-top: 10px; font-size: 11px"
+                    >
+                      + Create Batch
+                    </button>
+                  </div>
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">🚚 Ship Batch to Pharmacy</span>
+                    </div>
+                    <div style="display: grid; gap: 8px">
+                      <div class="fg">
+                        <label>Batch</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>
+                            BATCH-STR-2024-047 (10,000 units · AT_FACTORY)
+                          </option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label>Target Pharmacy</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>pharmacy1 — City Central Pharmacy</option>
+                        </select>
+                      </div>
+                      <div
+                        style="
+                          background: rgba(16, 185, 129, 0.06);
+                          border: 1px solid rgba(16, 185, 129, 0.15);
+                          border-radius: 6px;
+                          padding: 10px;
+                          font-size: 10px;
+                          color: #4a6080;
+                          font-family: 'IBM Plex Mono', monospace;
+                        "
+                      >
+                        Smart contract validates:<br />
+                        ✓ License active and not expired<br />
+                        ✓ Drug registered by government<br />
+                        ✓ Manufacturer owns this batch<br />
+                        ✓ Batch not already in transit
+                      </div>
+                    </div>
+                    <button
+                      class="btn btn-t"
+                      style="margin-top: 10px; font-size: 11px"
+                    >
+                      🚚 Ship Batch
+                    </button>
+                    <div
+                      class="alert alert-green fade-up"
+                      style="margin-top: 8px; margin-bottom: 0"
+                    >
+                      ✓ Shipped · Status → IN_TRANSIT · TX:
+                      0x7c3d9f2a1b4e8051...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 4: DOCTOR – PRESCRIPTIONS ════════════════════════ -->
+        <div class="slide" id="s4">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user">doctor1 · Doctor</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">🩺</span>Doctor
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>🩺 Doctor Portal</h2>
+                  <p>Issue prescriptions recorded permanently on the ledger</p>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">📝 Issue Prescription</span
+                    ><span class="badge bg">Tamper-proof</span>
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr 1fr 1fr;
+                      gap: 8px;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div class="fg">
+                      <label>Prescription ID</label
+                      ><input
+                        class="filled"
+                        value="RX-2024-0891"
+                        readonly
+                        style="font-family: 'IBM Plex Mono', monospace"
+                      />
+                    </div>
+                    <div class="fg">
+                      <label>Citizen ID</label
+                      ><input
+                        class="filled"
+                        value="CIT-847291"
+                        readonly
+                        style="font-family: 'IBM Plex Mono', monospace"
+                      />
+                    </div>
+                    <div class="fg">
+                      <label>Drug</label
+                      ><select
+                        style="
+                          background: #0a1020;
+                          border: 1px solid rgba(16, 185, 129, 0.35);
+                          border-radius: 6px;
+                          color: #10b981;
+                          padding: 6px 9px;
+                          font-size: 11px;
+                          width: 100%;
+                        "
+                      >
+                        <option>DRUG-AMOX-500 — Amoxicillin</option>
+                      </select>
+                    </div>
+                    <div class="fg">
+                      <label>Allowed Quantity</label
+                      ><input class="filled" value="21" readonly />
+                    </div>
+                  </div>
+                  <button class="btn btn-p" style="font-size: 11px">
+                    📝 Issue Prescription on Ledger
+                  </button>
+                  <div
+                    class="alert alert-green"
+                    style="margin-top: 10px; margin-bottom: 0"
+                  >
+                    ✅ RX-2024-0891 recorded on blockchain · Status: ACTIVE ·
+                    Patient CIT-847291 can collect at any pharmacy
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">My Prescriptions</span
+                    ><span class="badge bg">14 active</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rx ID</th>
+                        <th>Citizen</th>
+                        <th>Drug</th>
+                        <th>Qty</th>
+                        <th>Issued</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>RX-2024-0891</td>
+                        <td>CIT-847291</td>
+                        <td>Amoxicillin 500mg</td>
+                        <td>21</td>
+                        <td>2024-11-14</td>
+                        <td><span class="badge bg">ACTIVE</span></td>
+                      </tr>
+                      <tr>
+                        <td>RX-2024-0887</td>
+                        <td>CIT-293847</td>
+                        <td>Metformin 850mg</td>
+                        <td>60</td>
+                        <td>2024-11-12</td>
+                        <td><span class="badge bg">ACTIVE</span></td>
+                      </tr>
+                      <tr>
+                        <td>RX-2024-0874</td>
+                        <td>CIT-571830</td>
+                        <td>Lisinopril 10mg</td>
+                        <td>30</td>
+                        <td>2024-11-08</td>
+                        <td><span class="badge bt">FULFILLED</span></td>
+                      </tr>
+                      <tr>
+                        <td>RX-2024-0863</td>
+                        <td>CIT-192847</td>
+                        <td>Amoxicillin 500mg</td>
+                        <td>14</td>
+                        <td>2024-11-05</td>
+                        <td><span class="badge bt">FULFILLED</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 5: PHARMACY – RECEIVE + DISPENSE ═════════════════ -->
+        <div class="slide" id="s5">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user"
+              >pharmacy1 · Pharmacy · City Central Pharmacy</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">💊</span>Pharmacy
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>💊 Pharmacy Portal</h2>
+                  <p>Receive batches · Dispense against prescriptions</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">📥 Receive Batch</span
+                      ><span class="badge bt">IN_TRANSIT</span>
+                    </div>
+                    <div
+                      style="
+                        font-size: 11px;
+                        color: #4a6080;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      Accept incoming shipments from manufacturers. Smart
+                      contract verifies you are the target pharmacy.
+                    </div>
+                    <div class="fg" style="margin-bottom: 10px">
+                      <label>Batch ID</label>
+                      <select
+                        style="
+                          background: #0a1020;
+                          border: 1px solid rgba(16, 185, 129, 0.35);
+                          border-radius: 6px;
+                          color: #10b981;
+                          padding: 6px 9px;
+                          font-size: 11px;
+                          width: 100%;
+                        "
+                      >
+                        <option>
+                          BATCH-STR-2024-052 — Metformin 850mg (5,000 units)
+                        </option>
+                      </select>
+                    </div>
+                    <button class="btn btn-p" style="font-size: 11px">
+                      📥 Receive Batch
+                    </button>
+                    <div
+                      class="alert alert-green"
+                      style="margin-top: 8px; margin-bottom: 0"
+                    >
+                      ✓ Received · Status → AT_PHARMACY · TX:
+                      0x4a8d2f6b1c9e3074...
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-hdr">
+                      <span class="ct">💊 Dispense Drug</span>
+                    </div>
+                    <div style="display: grid; gap: 7px">
+                      <div class="fg">
+                        <label>Dispense ID</label
+                        ><input
+                          class="filled"
+                          value="DISP-2024-1847"
+                          readonly
+                          style="font-family: 'IBM Plex Mono', monospace"
+                        />
+                      </div>
+                      <div class="fg">
+                        <label>Prescription</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>
+                            RX-2024-0891 · CIT-847291 · Amoxicillin (21 units)
+                          </option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label>Batch</label
+                        ><select
+                          style="
+                            background: #0a1020;
+                            border: 1px solid rgba(16, 185, 129, 0.35);
+                            border-radius: 6px;
+                            color: #10b981;
+                            padding: 6px 9px;
+                            font-size: 11px;
+                            width: 100%;
+                          "
+                        >
+                          <option>
+                            BATCH-STR-2024-047 · AT_PHARMACY (9,847 remaining)
+                          </option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label>Quantity</label
+                        ><input class="filled" value="21" readonly />
+                      </div>
+                    </div>
+                    <button
+                      class="btn btn-t"
+                      style="margin-top: 8px; font-size: 11px"
+                    >
+                      💊 Dispense Drug
+                    </button>
+                  </div>
+                </div>
+                <div class="alert alert-green fade-up">
+                  ✅ DISP-2024-1847 · Amoxicillin 500mg × 21 dispensed to
+                  CIT-847291 · RX-2024-0891 → FULFILLED · TX:
+                  0x2b7f4d9c1a6e8023...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 6: RECALL ════════════════════════════════════════ -->
+        <div class="slide" id="s6">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user">government1 · Government / FDA</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">🏛</span>Government
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>🏛 Recall Management</h2>
+                  <p>
+                    Issue drug recalls · Identify affected patients · Enforce
+                    compliance
+                  </p>
+                </div>
+                <div class="alert alert-red">
+                  ⚠ <strong>Active Recall:</strong> BATCH-STR-2024-031 —
+                  Lisinopril 10mg · Contamination detected in manufacturing
+                  process · 3 patients notified
+                </div>
+                <div class="card" style="border-color: rgba(239, 68, 68, 0.3)">
+                  <div class="card-hdr">
+                    <span class="ct">⚠ Recall Batch</span
+                    ><span class="badge br">Class I</span>
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 2fr 2fr 3fr;
+                      gap: 8px;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div class="fg">
+                      <label>Batch</label
+                      ><input
+                        class="filled"
+                        value="BATCH-STR-2024-031"
+                        readonly
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          color: #ef4444;
+                          border-color: rgba(239, 68, 68, 0.4);
+                        "
+                      />
+                    </div>
+                    <div class="fg">
+                      <label>Recall Class</label
+                      ><select
+                        style="
+                          background: #0a1020;
+                          border: 1px solid rgba(239, 68, 68, 0.4);
+                          border-radius: 6px;
+                          color: #ef4444;
+                          padding: 6px 9px;
+                          font-size: 11px;
+                          width: 100%;
+                        "
+                      >
+                        <option>Class I — Dangerous to health</option>
+                      </select>
+                    </div>
+                    <div class="fg">
+                      <label>Reason</label
+                      ><input
+                        class="filled"
+                        value="Contamination detected — microbial growth in batch production"
+                        readonly
+                        style="
+                          color: #ef4444;
+                          border-color: rgba(239, 68, 68, 0.4);
+                        "
+                      />
+                    </div>
+                  </div>
+                  <button class="btn btn-r" style="font-size: 11px">
+                    ⚠ Issue Recall
+                  </button>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct"
+                      >Affected Patients — Batch BATCH-STR-2024-031</span
+                    ><span class="badge br">3 patients</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Dispense ID</th>
+                        <th>Citizen ID</th>
+                        <th>Drug</th>
+                        <th>Qty Dispensed</th>
+                        <th>Pharmacy</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="background: rgba(239, 68, 68, 0.05)">
+                        <td>DISP-2024-1731</td>
+                        <td style="color: #ef4444; font-weight: 700">
+                          CIT-293847
+                        </td>
+                        <td>Lisinopril 10mg</td>
+                        <td>30</td>
+                        <td>pharmacy1</td>
+                        <td>2024-10-15</td>
+                        <td><span class="badge br">⚠ RECALL</span></td>
+                      </tr>
+                      <tr style="background: rgba(239, 68, 68, 0.05)">
+                        <td>DISP-2024-1748</td>
+                        <td style="color: #ef4444; font-weight: 700">
+                          CIT-571830
+                        </td>
+                        <td>Lisinopril 10mg</td>
+                        <td>30</td>
+                        <td>pharmacy2</td>
+                        <td>2024-10-18</td>
+                        <td><span class="badge br">⚠ RECALL</span></td>
+                      </tr>
+                      <tr style="background: rgba(239, 68, 68, 0.05)">
+                        <td>DISP-2024-1762</td>
+                        <td style="color: #ef4444; font-weight: 700">
+                          CIT-192847
+                        </td>
+                        <td>Lisinopril 10mg</td>
+                        <td>30</td>
+                        <td>pharmacy1</td>
+                        <td>2024-10-21</td>
+                        <td><span class="badge br">⚠ RECALL</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 7: PATIENT VIEW ══════════════════════════════════ -->
+        <div class="slide" id="s7">
+          <div class="topbar">
+            <span class="topbar-brand">💊 PharmaChain</span>
+            <span class="topbar-user">citizen1 · Patient · CIT-847291</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">👤</span>My Health Records
+              </div>
+              <div class="nav-item">
+                <span class="ni">🔍</span>Verify Medicine
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>👤 Patient Portal</h2>
+                  <p>
+                    Your prescription and medication history on the blockchain
+                  </p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="kpi green">
+                    <div class="kl">Active Rx</div>
+                    <div class="kv">2</div>
+                  </div>
+                  <div class="kpi teal">
+                    <div class="kl">Filled Rx</div>
+                    <div class="kv">8</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Medications</div>
+                    <div class="kv">4</div>
+                  </div>
+                  <div class="kpi red">
+                    <div class="kl">Recall Alerts</div>
+                    <div class="kv">0</div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">My Prescriptions</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rx ID</th>
+                        <th>Drug</th>
+                        <th>Qty Allowed</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>RX-2024-0891</td>
+                        <td style="color: #ecfdf5">Amoxicillin 500mg</td>
+                        <td>21</td>
+                        <td>doctor1</td>
+                        <td>2024-11-14</td>
+                        <td><span class="badge bg">ACTIVE</span></td>
+                      </tr>
+                      <tr>
+                        <td>RX-2024-0887</td>
+                        <td style="color: #ecfdf5">Metformin 850mg</td>
+                        <td>60</td>
+                        <td>doctor1</td>
+                        <td>2024-11-12</td>
+                        <td><span class="badge bg">ACTIVE</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card">
+                  <div class="card-hdr">
+                    <span class="ct">Medication History</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Dispense ID</th>
+                        <th>Drug</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>Pharmacy</th>
+                        <th>Date</th>
+                        <th>Verified</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>DISP-2024-1847</td>
+                        <td style="color: #ecfdf5">Amoxicillin 500mg</td>
+                        <td style="font-size: 10px">BATCH-STR-2024-047</td>
+                        <td>21</td>
+                        <td>pharmacy1</td>
+                        <td>2024-11-15</td>
+                        <td><span class="badge bg">✓</span></td>
+                      </tr>
+                      <tr>
+                        <td>DISP-2024-1644</td>
+                        <td style="color: #ecfdf5">Metformin 850mg</td>
+                        <td style="font-size: 10px">BATCH-STR-2024-039</td>
+                        <td>60</td>
+                        <td>pharmacy1</td>
+                        <td>2024-10-30</td>
+                        <td><span class="badge bg">✓</span></td>
+                      </tr>
+                      <tr>
+                        <td>DISP-2024-1491</td>
+                        <td style="color: #ecfdf5">Amoxicillin 500mg</td>
+                        <td style="font-size: 10px">BATCH-STR-2024-028</td>
+                        <td>21</td>
+                        <td>pharmacy2</td>
+                        <td>2024-09-18</td>
+                        <td><span class="badge bg">✓</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 8: MEDICINE VERIFICATION ═════════════════════════ -->
+        <div class="slide" id="s8" style="background: #050912">
+          <div
+            class="page"
+            style="max-width: 640px; margin: 0 auto; padding-top: 24px"
+          >
+            <div style="text-align: center; margin-bottom: 20px">
+              <div
+                style="
+                  font-size: 18px;
+                  font-weight: 800;
+                  color: #10b981;
+                  font-family: 'IBM Plex Mono', monospace;
+                  letter-spacing: 0.05em;
+                  margin-bottom: 4px;
+                "
+              >
+                PharmaChain
+              </div>
+              <div
+                style="
+                  font-size: 15px;
+                  font-weight: 700;
+                  color: #ecfdf5;
+                  margin-bottom: 4px;
+                "
+              >
+                💊 Medicine Verification
+              </div>
+              <div style="font-size: 11px; color: #2d3f5a">
+                Anti-counterfeit verification — no login required · Powered by
+                Hyperledger Fabric
+              </div>
+              <div
+                style="
+                  display: flex;
+                  gap: 6px;
+                  justify-content: center;
+                  margin-top: 8px;
+                  flex-wrap: wrap;
+                "
+              >
+                <span
+                  style="
+                    font-size: 9px;
+                    padding: 2px 8px;
+                    border-radius: 99px;
+                    background: #0c1425;
+                    color: #2d3f5a;
+                    border: 1px solid rgba(16, 185, 129, 0.1);
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                  >DSCSA Compliant</span
+                >
+                <span
+                  style="
+                    font-size: 9px;
+                    padding: 2px 8px;
+                    border-radius: 99px;
+                    background: #0c1425;
+                    color: #2d3f5a;
+                    border: 1px solid rgba(16, 185, 129, 0.1);
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                  >WHO Track & Trace</span
+                >
+                <span
+                  style="
+                    font-size: 9px;
+                    padding: 2px 8px;
+                    border-radius: 99px;
+                    background: #0c1425;
+                    color: #2d3f5a;
+                    border: 1px solid rgba(16, 185, 129, 0.1);
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                  >GS1 Standards</span
+                >
+                <span
+                  style="
+                    font-size: 9px;
+                    padding: 2px 8px;
+                    border-radius: 99px;
+                    background: #0c1425;
+                    color: #2d3f5a;
+                    border: 1px solid rgba(16, 185, 129, 0.1);
+                    font-family: 'IBM Plex Mono', monospace;
+                  "
+                  >Tamper-proof</span
+                >
+              </div>
+            </div>
+            <div class="card" style="margin-bottom: 12px">
+              <div style="display: flex; gap: 10px; align-items: flex-end">
+                <div class="fg" style="flex: 1">
+                  <label>Batch ID — from medicine packaging</label
+                  ><input
+                    class="filled"
+                    value="BATCH-STR-2024-047"
+                    readonly
+                    style="font-family: 'IBM Plex Mono', monospace"
+                  />
+                </div>
+                <button class="btn btn-p" style="min-width: 100px">
+                  🔍 Verify
+                </button>
+              </div>
+            </div>
+            <div
+              class="card"
+              style="border-color: rgba(16, 185, 129, 0.4); border-width: 2px"
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 14px;
+                "
+              >
+                <div
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: rgba(16, 185, 129, 0.15);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                  "
+                >
+                  ✅
+                </div>
+                <div>
+                  <div
+                    style="font-size: 15px; font-weight: 700; color: #10b981"
+                  >
+                    Authentic Medicine — Verified on Blockchain
+                  </div>
+                  <div
+                    style="
+                      font-size: 10px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                    "
+                  >
+                    BATCH-STR-2024-047
+                  </div>
+                </div>
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Drug Name
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #ecfdf5; font-weight: 500"
+                  >
+                    Amoxicillin 500mg
+                  </div>
+                </div>
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Manufacturer
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #ecfdf5; font-weight: 500"
+                  >
+                    PharmaCo Ltd
+                  </div>
+                </div>
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    FDA License
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #10b981; font-weight: 600"
+                  >
+                    Valid · 2027-01-14
+                  </div>
+                </div>
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Quantity
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #ecfdf5; font-weight: 500"
+                  >
+                    10,000 units
+                  </div>
+                </div>
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Status
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #10b981; font-weight: 600"
+                  >
+                    AT_PHARMACY
+                  </div>
+                </div>
+                <div
+                  style="background: #0a1020; border-radius: 6px; padding: 8px"
+                >
+                  <div
+                    style="
+                      font-size: 9px;
+                      color: #2d3f5a;
+                      font-family: 'IBM Plex Mono', monospace;
+                      text-transform: uppercase;
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Recall Status
+                  </div>
+                  <div
+                    style="font-size: 12px; color: #10b981; font-weight: 600"
+                  >
+                    ✓ Not Recalled
+                  </div>
+                </div>
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #2d3f5a;
+                  text-align: center;
+                  font-family: 'IBM Plex Mono', monospace;
+                "
+              >
+                Staff Login · Powered by Hyperledger Fabric · DApp Architects
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 9: END ════════════════════════════════════════════ -->
+        <div
+          class="slide"
+          id="s9"
+          style="
+            background: linear-gradient(
+              135deg,
+              #030610 0%,
+              #060c1a 50%,
+              #0a1020 100%
+            );
+            align-items: center;
+            justify-content: center;
+            min-height: 540px;
+          "
+        >
+          <div style="text-align: center; padding: 40px 32px; max-width: 620px">
+            <div
+              style="
+                font-size: 42px;
+                margin-bottom: 14px;
+                filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.5));
+              "
+            >
+              💊
+            </div>
+            <div class="brand-display">
+              <span class="brand-solid">Pharma</span
+              ><span class="brand-outline">Chain</span>
+            </div>
+            <div
+              style="
+                font-size: 13px;
+                color: #10b981;
+                font-family: 'IBM Plex Mono', monospace;
+                letter-spacing: 0.1em;
+                margin-bottom: 24px;
+              "
+            >
+              PHARMACEUTICAL SUPPLY CHAIN
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 24px;
+                text-align: left;
+              "
+            >
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.05);
+                  border: 1px solid rgba(16, 185, 129, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #10b981;
+                    margin-bottom: 8px;
+                  "
+                >
+                  End-to-end traceability
+                </div>
+                <div style="font-size: 11px; color: #4a6080">
+                  Factory → license → batch → pharmacy → patient — every step
+                  on-chain
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(45, 212, 191, 0.05);
+                  border: 1px solid rgba(45, 212, 191, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #2dd4bf;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Counterfeit prevention
+                </div>
+                <div style="font-size: 11px; color: #4a6080">
+                  Public batch verification — patients scan and verify before
+                  taking
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(245, 158, 11, 0.05);
+                  border: 1px solid rgba(245, 158, 11, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #f59e0b;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Smart contracts enforce
+                </div>
+                <div style="font-size: 11px; color: #4a6080">
+                  License required before batch. Prescription required before
+                  dispense.
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(59, 130, 246, 0.05);
+                  border: 1px solid rgba(59, 130, 246, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3b82f6;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Instant recall response
+                </div>
+                <div style="font-size: 11px; color: #4a6080">
+                  Identify every patient who received a recalled batch in
+                  seconds
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                font-size: 14px;
+                color: #10b981;
+                font-weight: 600;
+                margin-bottom: 4px;
+              "
+            >
+              https://www.dapparchitects.com
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #2d3f5a;
+                font-family: 'IBM Plex Mono', monospace;
+              "
+            >
+              info@dapparchitects.com
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /screen -->
+
+      <div class="controls">
+        <button class="cbtn" onclick="changeSlide(-1)">◀ Prev</button>
+        <button class="cbtn play" id="playBtn" onclick="togglePlay()">
+          ⏸ Pause
+        </button>
+        <button class="cbtn" onclick="changeSlide(1)">Next ▶</button>
+        <div id="prog-o"><div id="prog-i"></div></div>
+        <div id="sinfo">Slide 1 / 10</div>
+      </div>
+    </div>
+
+    <script>
+      const SLIDES = [...document.querySelectorAll('.slide')];
+      const DURATIONS = [
+        4000, 6000, 6000, 6000, 6000, 6000, 6000, 6000, 6000, 6000,
+      ];
+      const LABELS = [
+        'Title',
+        'Dashboard Overview',
+        'Government — Drug Registration & Licensing',
+        'Manufacturer — Batch Creation & Shipping',
+        'Doctor — Prescriptions on Ledger',
+        'Pharmacy — Receive & Dispense',
+        'Recall Management',
+        'Patient Portal',
+        'Medicine Verification',
+        'Summary',
+      ];
+      let cur = 0,
+        playing = true,
+        progTimer = null,
+        start = 0;
+
+      function showSlide(n) {
+        SLIDES[cur].classList.remove('active');
+        cur = (n + SLIDES.length) % SLIDES.length;
+        SLIDES[cur].classList.add('active');
+        document.getElementById('sinfo').textContent =
+          `${LABELS[cur]} · ${cur + 1}/${SLIDES.length}`;
+        if (playing) startTimer();
+      }
+
+      function startTimer() {
+        clearInterval(progTimer);
+        start = Date.now();
+        const dur = DURATIONS[cur];
+        document.getElementById('prog-i').style.width = '0%';
+        progTimer = setInterval(() => {
+          const el = Date.now() - start;
+          document.getElementById('prog-i').style.width =
+            Math.min(100, (el / dur) * 100) + '%';
+          if (el >= dur) {
+            clearInterval(progTimer);
+            showSlide(cur + 1);
+          }
+        }, 80);
+      }
+
+      function togglePlay() {
+        playing = !playing;
+        const btn = document.getElementById('playBtn');
+        if (playing) {
+          btn.textContent = '⏸ Pause';
+          btn.className = 'cbtn pause';
+          startTimer();
+        } else {
+          clearInterval(progTimer);
+          btn.textContent = '▶ Play';
+          btn.className = 'cbtn play';
+        }
+      }
+
+      function changeSlide(d) {
+        clearInterval(progTimer);
+        showSlide(cur + d);
+      }
+
+      document.getElementById('sinfo').textContent =
+        `${LABELS[0]} · 1/${SLIDES.length}`;
+      startTimer();
+    </script>
+  </body>
+</html>

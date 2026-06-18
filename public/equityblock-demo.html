@@ -1,0 +1,3585 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EquityBlock — Demo</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Syne', sans-serif;
+        background: #03060f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      #demo {
+        width: 100%;
+        max-width: 860px;
+        background: #060c1a;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow:
+          0 32px 80px rgba(0, 0, 0, 0.9),
+          0 0 0 1px rgba(16, 185, 129, 0.08);
+      }
+      #screen {
+        min-height: 540px;
+        position: relative;
+        overflow: hidden;
+      }
+      /* --- Application Name ---*/
+      @font-face {
+        font-family: 'DesignerBlock';
+        src: url('/fonts/DESIB___.TTF') format('truetype');
+        font-display: swap;
+      }
+      .brand-display {
+        font-family: 'DesignerBlock', sans-serif;
+        font-size: 45px;
+        line-height: 1;
+        margin-bottom: 14px;
+        letter-spacing: 3px;
+      }
+      .brand-solid {
+        color: #ff8000;
+      }
+      .brand-outline {
+        color: transparent;
+        -webkit-text-stroke: 2.5px #ff8000;
+        text-stroke: 2.5px #ff8000;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+      }
+      .slide.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      /* ── LAYOUT ── */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 18px;
+        background: #080f20;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        flex-shrink: 0;
+      }
+      .topbar-brand {
+        font-size: 13px;
+        font-weight: 700;
+        color: #10b981;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.05em;
+      }
+      .topbar-user {
+        font-size: 10px;
+        color: #475569;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .app-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 178px;
+        background: #080f20;
+        border-right: 1px solid rgba(16, 185, 129, 0.08);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        padding: 8px 0;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        font-size: 11.5px;
+        color: #475569;
+        margin: 1px 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Syne', sans-serif;
+      }
+      .nav-item.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-left: 2px solid #10b981;
+      }
+      .nav-item .ni {
+        font-size: 13px;
+        width: 16px;
+        text-align: center;
+      }
+      .main {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .page {
+        flex: 1;
+        padding: 18px 20px;
+        overflow: hidden;
+      }
+      .ph {
+        margin-bottom: 14px;
+      }
+      .ph h2 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #e2e8f0;
+        letter-spacing: -0.3px;
+      }
+      .ph p {
+        font-size: 11px;
+        color: #475569;
+        margin-top: 2px;
+      }
+
+      /* ── KPIs ── */
+      .kpi-grid {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .kpi {
+        background: #0d1529;
+        border: 1px solid rgba(16, 185, 129, 0.08);
+        border-radius: 8px;
+        padding: 10px 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+      }
+      .kpi.green::after {
+        background: linear-gradient(90deg, #10b981, #34d399);
+      }
+      .kpi.blue::after {
+        background: linear-gradient(90deg, #3b82f6, #38bdf8);
+      }
+      .kpi.amber::after {
+        background: linear-gradient(90deg, #f59e0b, #fcd34d);
+      }
+      .kpi.violet::after {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      }
+      .kpi.red::after {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+      }
+      .kpi.cyan::after {
+        background: linear-gradient(90deg, #06b6d4, #67e8f9);
+      }
+      .kl {
+        font-size: 9px;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .kv {
+        font-size: 22px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      .kpi.green .kv {
+        color: #10b981;
+      }
+      .kpi.blue .kv {
+        color: #3b82f6;
+      }
+      .kpi.amber .kv {
+        color: #f59e0b;
+      }
+      .kpi.violet .kv {
+        color: #8b5cf6;
+      }
+      .kpi.red .kv {
+        color: #ef4444;
+      }
+      .kpi.cyan .kv {
+        color: #06b6d4;
+      }
+
+      /* ── CARDS ── */
+      .card {
+        background: #0d1529;
+        border: 1px solid rgba(16, 185, 129, 0.08);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 10px;
+      }
+      .card-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .ct {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+
+      /* ── BADGES ── */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 9.5px;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .bg {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+      }
+      .bb {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+      }
+      .ba {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+      }
+      .br {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+      .bv {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+      }
+      .bc {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+      }
+
+      /* ── TABLES ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      thead th {
+        text-align: left;
+        padding: 6px 10px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        font-family: 'JetBrains Mono', monospace;
+      }
+      tbody tr {
+        border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody td {
+        padding: 7px 10px;
+        color: #64748b;
+      }
+      tbody td:first-child {
+        color: #e2e8f0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+      }
+
+      /* ── PROGRESS BAR ── */
+      .pbar-bg {
+        height: 5px;
+        background: #0d1529;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+      .pbar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s;
+      }
+
+      /* ── ALERT ── */
+      .alert {
+        padding: 8px 12px;
+        border-radius: 7px;
+        font-size: 11px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .alert-green {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+      }
+      .alert-amber {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #fcd34d;
+      }
+
+      /* ── TX BLOCK ── */
+      .tx-block {
+        background: #080f20;
+        border-radius: 8px;
+        padding: 10px 12px;
+        border-left: 3px solid #10b981;
+        margin-bottom: 8px;
+      }
+      .tx-id {
+        font-size: 10px;
+        color: #10b981;
+        font-family: 'JetBrains Mono', monospace;
+        word-break: break-all;
+      }
+      .tx-meta {
+        font-size: 10px;
+        color: #334155;
+        margin-top: 3px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      /* ── FORMS ── */
+      .fg label {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 4px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .fg input,
+      .fg select {
+        width: 100%;
+        background: #080f20;
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        border-radius: 6px;
+        color: #e2e8f0;
+        padding: 6px 9px;
+        font-size: 11px;
+        font-family: 'Syne', sans-serif;
+        outline: none;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        font-family: 'Syne', sans-serif;
+      }
+      .btn-g {
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #fff;
+      }
+      .btn-v {
+        background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+        color: #fff;
+      }
+      .btn-a {
+        background: linear-gradient(135deg, #d97706, #f59e0b);
+        color: #fff;
+      }
+      .btn-r {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: #fff;
+      }
+
+      /* ── CHAIN FLOW ── */
+      .chain {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 14px;
+      }
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+      }
+      .step-dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        position: relative;
+        z-index: 1;
+      }
+      .step-dot.done {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid #10b981;
+      }
+      .step-dot.active {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid #10b981;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+      }
+      .step-dot.wait {
+        background: #0d1529;
+        border: 2px solid rgba(16, 185, 129, 0.15);
+      }
+      .step-label {
+        font-size: 9.5px;
+        color: #475569;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .step-connector {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, #10b981, rgba(16, 185, 129, 0.3));
+        margin-top: -18px;
+      }
+
+      /* ── NOTIF ── */
+      .notif {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+      }
+      .notif:last-child {
+        border-bottom: none;
+      }
+      .notif-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .notif-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+      .notif-msg {
+        font-size: 10px;
+        color: #475569;
+        margin-top: 2px;
+      }
+      .notif-time {
+        font-size: 9px;
+        color: #334155;
+        font-family: 'JetBrains Mono', monospace;
+        margin-top: 2px;
+      }
+      .notif-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        flex-shrink: 0;
+        margin-top: 5px;
+      }
+
+      /* ── OWN BAR ── */
+      .own-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .own-name {
+        font-size: 10px;
+        color: #94a3b8;
+        width: 100px;
+        flex-shrink: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .own-bar-bg {
+        flex: 1;
+        height: 5px;
+        background: #0d1529;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .own-bar {
+        height: 100%;
+        border-radius: 3px;
+      }
+      .own-pct {
+        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        color: #475569;
+        width: 36px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      /* ── CONTROLS ── */
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #080f20;
+        border-top: 1px solid rgba(16, 185, 129, 0.08);
+      }
+      .cbtn {
+        background: transparent;
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        color: #475569;
+        padding: 5px 14px;
+        border-radius: 5px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: 'Syne', sans-serif;
+        transition: all 0.15s;
+      }
+      .cbtn:hover {
+        background: rgba(16, 185, 129, 0.08);
+        color: #e2e8f0;
+      }
+      .cbtn.play {
+        background: linear-gradient(135deg, #059669, #10b981);
+        border-color: transparent;
+        color: #fff;
+      }
+      .cbtn.pause {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        border-color: transparent;
+        color: #fff;
+      }
+      #sinfo {
+        font-size: 10px;
+        color: #334155;
+        font-family: 'JetBrains Mono', monospace;
+        min-width: 260px;
+        text-align: center;
+      }
+      #prog-o {
+        flex: 1;
+        height: 3px;
+        background: #0d1529;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      #prog-i {
+        height: 100%;
+        background: linear-gradient(90deg, #059669, #10b981);
+        width: 0%;
+        transition: width 0.08s linear;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="demo">
+      <div id="screen">
+        <!-- ══ SLIDE 1: TITLE ══════════════════════════════════════════════════ -->
+        <div
+          class="slide active"
+          id="s1"
+          style="
+            background: linear-gradient(
+              135deg,
+              #03060f 0%,
+              #060c1a 50%,
+              #080f20 100%
+            );
+            align-items: center;
+            justify-content: center;
+            min-height: 540px;
+          "
+        >
+          <div style="text-align: center; padding: 40px 32px; max-width: 640px">
+            <div
+              style="
+                font-size: 48px;
+                margin-bottom: 14px;
+                filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.5));
+              "
+            >
+              🏛
+            </div>
+            <div class="brand-display">
+              <span class="brand-solid">Equity</span
+              ><span class="brand-outline">Block</span>
+            </div>
+            <div
+              style="
+                font-size: 13px;
+                color: #10b981;
+                font-family: 'JetBrains Mono', monospace;
+                letter-spacing: 0.1em;
+                margin-bottom: 24px;
+              "
+            >
+              FRACTIONAL REAL ESTATE INVESTMENT PLATFORM
+            </div>
+            <div
+              style="
+                font-size: 14px;
+                color: #475569;
+                margin-bottom: 28px;
+                line-height: 1.6;
+              "
+            >
+              Own fractions of premium real estate. Earn rental income from day
+              one.<br />Powered by blockchain-verified ERC20 ownership tokens.
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                margin-bottom: 24px;
+              "
+            >
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.15);
+                  border-radius: 10px;
+                  padding: 14px 10px;
+                "
+              >
+                <div style="font-size: 22px; font-weight: 700; color: #10b981">
+                  7
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: #334155;
+                    font-family: 'JetBrains Mono', monospace;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                  "
+                >
+                  Properties
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.15);
+                  border-radius: 10px;
+                  padding: 14px 10px;
+                "
+              >
+                <div style="font-size: 22px; font-weight: 700; color: #10b981">
+                  8.2%
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: #334155;
+                    font-family: 'JetBrains Mono', monospace;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                  "
+                >
+                  Avg Yield
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.15);
+                  border-radius: 10px;
+                  padding: 14px 10px;
+                "
+              >
+                <div style="font-size: 22px; font-weight: 700; color: #10b981">
+                  $2.8M
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: #334155;
+                    font-family: 'JetBrains Mono', monospace;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                  "
+                >
+                  Total Value
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.15);
+                  border-radius: 10px;
+                  padding: 14px 10px;
+                "
+              >
+                <div style="font-size: 22px; font-weight: 700; color: #10b981">
+                  1%
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: #334155;
+                    font-family: 'JetBrains Mono', monospace;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                  "
+                >
+                  Min Stake
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                font-size: 12px;
+                color: #10b981;
+                font-weight: 600;
+                margin-bottom: 4px;
+              "
+            >
+              https://www.dapparchitects.com
+            </div>
+            <div
+              style="
+                font-size: 10px;
+                color: #334155;
+                font-family: 'JetBrains Mono', monospace;
+              "
+            >
+              info@dapparchitects.com
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 2: MARKETPLACE ════════════════════════════════════════════ -->
+        <div class="slide" id="s2">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user">investor@equityblock.com · Investor</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">🏪</span> Marketplace
+              </div>
+              <div class="nav-item"><span class="ni">💼</span> Portfolio</div>
+              <div class="nav-item"><span class="ni">💳</span> Wallet</div>
+              <div class="nav-item"><span class="ni">💰</span> Earnings</div>
+              <div class="nav-item">
+                <span class="ni">↔️</span> Transactions
+              </div>
+              <div class="nav-item">
+                <span class="ni">📊</span> Market Insights
+              </div>
+              <div class="nav-item"><span class="ni">👤</span> My Profile</div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>Property Marketplace</h2>
+                  <p>Browse and invest in fractional real estate</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="kpi green">
+                    <div class="kl">Portfolio Value</div>
+                    <div class="kv" style="font-size: 16px">$2.8M</div>
+                  </div>
+                  <div class="kpi green">
+                    <div class="kl">Avg Yield</div>
+                    <div class="kv" style="font-size: 16px">8.2%</div>
+                  </div>
+                  <div class="kpi amber">
+                    <div class="kl">Monthly Rent</div>
+                    <div class="kv" style="font-size: 16px">$18,450</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Properties</div>
+                    <div class="kv" style="font-size: 16px">7</div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                  "
+                >
+                  <div
+                    style="
+                      background: #0d1529;
+                      border: 1px solid rgba(16, 185, 129, 0.08);
+                      border-radius: 8px;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        height: 60px;
+                        background: linear-gradient(135deg, #1a2744, #0f2040);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        position: relative;
+                      "
+                    >
+                      🏠<span
+                        style="
+                          position: absolute;
+                          top: 5px;
+                          right: 5px;
+                          background: rgba(0, 0, 0, 0.7);
+                          border: 1px solid rgba(16, 185, 129, 0.3);
+                          color: #10b981;
+                          font-size: 9px;
+                          font-family: 'JetBrains Mono', monospace;
+                          padding: 2px 6px;
+                          border-radius: 4px;
+                        "
+                        >9.1% yield</span
+                      >
+                    </div>
+                    <div style="padding: 10px">
+                      <div
+                        style="
+                          font-size: 11px;
+                          font-weight: 600;
+                          color: #e2e8f0;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        123 Main Street, Indianapolis
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 700;
+                          color: #e2e8f0;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        $350,000
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 3px;
+                        "
+                      >
+                        <span>65% sold</span><span>35% available</span>
+                      </div>
+                      <div class="pbar-bg">
+                        <div
+                          class="pbar-fill"
+                          style="width: 65%; background: #10b981"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      background: #0d1529;
+                      border: 1px solid rgba(16, 185, 129, 0.08);
+                      border-radius: 8px;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        height: 60px;
+                        background: linear-gradient(135deg, #1a1a2e, #16213e);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        position: relative;
+                      "
+                    >
+                      🏢<span
+                        style="
+                          position: absolute;
+                          top: 5px;
+                          right: 5px;
+                          background: rgba(0, 0, 0, 0.7);
+                          border: 1px solid rgba(16, 185, 129, 0.3);
+                          color: #10b981;
+                          font-size: 9px;
+                          font-family: 'JetBrains Mono', monospace;
+                          padding: 2px 6px;
+                          border-radius: 4px;
+                        "
+                        >7.4% yield</span
+                      >
+                    </div>
+                    <div style="padding: 10px">
+                      <div
+                        style="
+                          font-size: 11px;
+                          font-weight: 600;
+                          color: #e2e8f0;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        555 Commerce Blvd, Indianapolis
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 700;
+                          color: #e2e8f0;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        $890,000
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 3px;
+                        "
+                      >
+                        <span>10% sold</span><span>90% available</span>
+                      </div>
+                      <div class="pbar-bg">
+                        <div
+                          class="pbar-fill"
+                          style="width: 10%; background: #10b981"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      background: #0d1529;
+                      border: 1px solid rgba(16, 185, 129, 0.08);
+                      border-radius: 8px;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        height: 60px;
+                        background: linear-gradient(135deg, #1a2744, #1a1a2e);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        position: relative;
+                      "
+                    >
+                      🏡<span
+                        style="
+                          position: absolute;
+                          top: 5px;
+                          right: 5px;
+                          background: rgba(0, 0, 0, 0.7);
+                          border: 1px solid rgba(16, 185, 129, 0.3);
+                          color: #10b981;
+                          font-size: 9px;
+                          font-family: 'JetBrains Mono', monospace;
+                          padding: 2px 6px;
+                          border-radius: 4px;
+                        "
+                        >8.8% yield</span
+                      >
+                    </div>
+                    <div style="padding: 10px">
+                      <div
+                        style="
+                          font-size: 11px;
+                          font-weight: 600;
+                          color: #e2e8f0;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        456 Oak Avenue, Carmel
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 700;
+                          color: #e2e8f0;
+                          margin-bottom: 5px;
+                        "
+                      >
+                        $525,000
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 3px;
+                        "
+                      >
+                        <span>42% sold</span><span>58% available</span>
+                      </div>
+                      <div class="pbar-bg">
+                        <div
+                          class="pbar-fill"
+                          style="width: 42%; background: #10b981"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 3: PROPERTY DETAIL ════════════════════════════════════════ -->
+        <div class="slide" id="s3">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user">investor@equityblock.com · Investor</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">🏪</span> Marketplace
+              </div>
+              <div class="nav-item"><span class="ni">💼</span> Portfolio</div>
+              <div class="nav-item"><span class="ni">💳</span> Wallet</div>
+              <div class="nav-item"><span class="ni">💰</span> Earnings</div>
+              <div class="nav-item">
+                <span class="ni">↔️</span> Transactions
+              </div>
+              <div class="nav-item">
+                <span class="ni">📊</span> Market Insights
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 200px;
+                    gap: 12px;
+                  "
+                >
+                  <div>
+                    <div
+                      style="
+                        background: #080f20;
+                        border-radius: 8px;
+                        height: 110px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 36px;
+                        margin-bottom: 10px;
+                        border: 1px solid rgba(16, 185, 129, 0.1);
+                      "
+                    >
+                      🏠
+                    </div>
+                    <div
+                      style="
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: #e2e8f0;
+                        margin-bottom: 2px;
+                      "
+                    >
+                      123 Main Street, Indianapolis, IN 46201
+                    </div>
+                    <div
+                      style="
+                        font-size: 11px;
+                        color: #475569;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      Residential · 3 bed · 2 bath · 1,850 sqft · ✓ Priced below
+                      market average
+                    </div>
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 6px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <div
+                        style="
+                          background: #0d1529;
+                          border-radius: 6px;
+                          padding: 8px;
+                          border: 1px solid rgba(16, 185, 129, 0.08);
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 9px;
+                            color: #334155;
+                            font-family: 'JetBrains Mono', monospace;
+                          "
+                        >
+                          PRICE
+                        </div>
+                        <div
+                          style="
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: #e2e8f0;
+                          "
+                        >
+                          $350K
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          background: #0d1529;
+                          border-radius: 6px;
+                          padding: 8px;
+                          border: 1px solid rgba(16, 185, 129, 0.08);
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 9px;
+                            color: #334155;
+                            font-family: 'JetBrains Mono', monospace;
+                          "
+                        >
+                          MONTHLY RENT
+                        </div>
+                        <div
+                          style="
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: #10b981;
+                          "
+                        >
+                          $2,660
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          background: #0d1529;
+                          border-radius: 6px;
+                          padding: 8px;
+                          border: 1px solid rgba(16, 185, 129, 0.08);
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 9px;
+                            color: #334155;
+                            font-family: 'JetBrains Mono', monospace;
+                          "
+                        >
+                          ANNUAL RENT
+                        </div>
+                        <div
+                          style="
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: #10b981;
+                          "
+                        >
+                          $31,920
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          background: #0d1529;
+                          border-radius: 6px;
+                          padding: 8px;
+                          border: 1px solid rgba(16, 185, 129, 0.08);
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 9px;
+                            color: #334155;
+                            font-family: 'JetBrains Mono', monospace;
+                          "
+                        >
+                          GROSS YIELD
+                        </div>
+                        <div
+                          style="
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: #10b981;
+                          "
+                        >
+                          9.12%
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: #334155;
+                        font-family: 'JetBrains Mono', monospace;
+                        margin-bottom: 4px;
+                      "
+                    >
+                      Ownership: 65% sold to 2 investors · 35% available
+                    </div>
+                    <div class="pbar-bg">
+                      <div
+                        class="pbar-fill"
+                        style="width: 65%; background: #10b981"
+                      ></div>
+                    </div>
+                    <div style="margin-top: 10px">
+                      <div class="own-row">
+                        <!-- <span class="own-name">Faruk Ansari</span> -->
+                        <div class="own-bar-bg">
+                          <div
+                            class="own-bar"
+                            style="width: 50%; background: #8b5cf6"
+                          ></div>
+                        </div>
+                        <span class="own-pct">50%</span>
+                      </div>
+                      <div class="own-row">
+                        <span class="own-name">Investor #2</span>
+                        <div class="own-bar-bg">
+                          <div
+                            class="own-bar"
+                            style="width: 15%; background: #8b5cf6"
+                          ></div>
+                        </div>
+                        <span class="own-pct">15%</span>
+                      </div>
+                      <div class="own-row">
+                        <span class="own-name">Available</span>
+                        <div class="own-bar-bg">
+                          <div
+                            class="own-bar"
+                            style="
+                              width: 35%;
+                              background: rgba(16, 185, 129, 0.3);
+                            "
+                          ></div>
+                        </div>
+                        <span class="own-pct" style="color: #10b981">35%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div
+                      style="
+                        background: #0d1529;
+                        border: 1px solid rgba(16, 185, 129, 0.12);
+                        border-radius: 8px;
+                        padding: 12px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 11px;
+                          font-weight: 600;
+                          color: #e2e8f0;
+                          margin-bottom: 10px;
+                        "
+                      >
+                        💰 Investment Calculator
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        YOUR STAKE — 10%
+                      </div>
+                      <div class="pbar-bg" style="margin-bottom: 10px">
+                        <div
+                          class="pbar-fill"
+                          style="width: 28%; background: #10b981"
+                        ></div>
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        INVESTMENT COST
+                      </div>
+                      <div
+                        style="
+                          font-size: 15px;
+                          font-weight: 700;
+                          color: #e2e8f0;
+                          margin-bottom: 8px;
+                        "
+                      >
+                        $35,000
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        MONTHLY INCOME
+                      </div>
+                      <div
+                        style="
+                          font-size: 15px;
+                          font-weight: 700;
+                          color: #10b981;
+                          margin-bottom: 8px;
+                        "
+                      >
+                        +$266/mo
+                      </div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 2px;
+                        "
+                      >
+                        ANNUAL INCOME
+                      </div>
+                      <div
+                        style="
+                          font-size: 15px;
+                          font-weight: 700;
+                          color: #10b981;
+                          margin-bottom: 10px;
+                        "
+                      >
+                        +$3,192/yr
+                      </div>
+                      <button
+                        class="btn btn-g"
+                        style="width: 100%; justify-content: center"
+                      >
+                        Invest Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 4: PORTFOLIO ═══════════════════════════════════════════════ -->
+        <div class="slide" id="s4">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user">investor@equityblock.com · Investor</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item"><span class="ni">🏪</span> Marketplace</div>
+              <div class="nav-item active">
+                <span class="ni">💼</span> Portfolio
+              </div>
+              <div class="nav-item"><span class="ni">💳</span> Wallet</div>
+              <div class="nav-item"><span class="ni">💰</span> Earnings</div>
+              <div class="nav-item">
+                <span class="ni">↔️</span> Transactions
+              </div>
+              <div class="nav-item">
+                <span class="ni">📊</span> Market Insights
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>My Portfolio</h2>
+                  <p>Your fractional property holdings</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="kpi green">
+                    <div class="kl">Total Invested</div>
+                    <div class="kv" style="font-size: 16px">$62,420</div>
+                  </div>
+                  <div class="kpi green">
+                    <div class="kl">Monthly Income</div>
+                    <div class="kv" style="font-size: 16px">$398</div>
+                  </div>
+                  <div class="kpi amber">
+                    <div class="kl">Annual Income</div>
+                    <div class="kv" style="font-size: 16px">$4,778</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Holdings</div>
+                    <div class="kv" style="font-size: 16px">3</div>
+                  </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Property</th>
+                      <th>Stake</th>
+                      <th>Value</th>
+                      <th>Monthly</th>
+                      <th>Yield</th>
+                      <th>On-Chain</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>123 Main Street, Indianapolis</td>
+                      <td><span class="badge bg">50%</span></td>
+                      <td style="color: #e2e8f0">$175,000</td>
+                      <td style="color: #10b981">$1,330/mo</td>
+                      <td style="color: #10b981">9.12%</td>
+                      <td><span class="badge bv">✓ Minted</span></td>
+                      <td>
+                        <button
+                          class="btn btn-r"
+                          style="padding: 3px 8px; font-size: 9px"
+                        >
+                          Sell
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>456 Oak Avenue, Carmel</td>
+                      <td><span class="badge bg">20%</span></td>
+                      <td style="color: #e2e8f0">$105,000</td>
+                      <td style="color: #10b981">$420/mo</td>
+                      <td style="color: #10b981">4.80%</td>
+                      <td><span class="badge bv">✓ Minted</span></td>
+                      <td>
+                        <button
+                          class="btn btn-r"
+                          style="padding: 3px 8px; font-size: 9px"
+                        >
+                          Sell
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>321 Elm Street, Zionsville</td>
+                      <td><span class="badge bg">10%</span></td>
+                      <td style="color: #e2e8f0">$72,500</td>
+                      <td style="color: #10b981">$330/mo</td>
+                      <td style="color: #10b981">5.45%</td>
+                      <td><span class="badge bv">✓ Minted</span></td>
+                      <td>
+                        <button
+                          class="btn btn-r"
+                          style="padding: 3px 8px; font-size: 9px"
+                        >
+                          Sell
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 5: WALLET + EARNINGS ══════════════════════════════════════ -->
+        <div class="slide" id="s5">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user">investor@equityblock.com · Investor</span>
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item"><span class="ni">🏪</span> Marketplace</div>
+              <div class="nav-item"><span class="ni">💼</span> Portfolio</div>
+              <div class="nav-item active">
+                <span class="ni">💳</span> Wallet
+              </div>
+              <div class="nav-item"><span class="ni">💰</span> Earnings</div>
+              <div class="nav-item">
+                <span class="ni">↔️</span> Transactions
+              </div>
+              <div class="nav-item">
+                <span class="ni">📊</span> Market Insights
+              </div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>Wallet & Earnings</h2>
+                  <p>Manage funds and claim rental income</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                  "
+                >
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">💳 Platform Wallet</span
+                        ><span class="badge bg">Active</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 28px;
+                          font-weight: 700;
+                          color: #10b981;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        $62,420.00
+                      </div>
+                      <div
+                        style="
+                          font-size: 10px;
+                          color: #475569;
+                          margin-bottom: 12px;
+                        "
+                      >
+                        Available balance
+                      </div>
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 1fr 1fr;
+                          gap: 8px;
+                        "
+                      >
+                        <button
+                          class="btn btn-g"
+                          style="justify-content: center; font-size: 11px"
+                        >
+                          + Deposit
+                        </button>
+                        <button
+                          class="btn"
+                          style="
+                            justify-content: center;
+                            font-size: 11px;
+                            background: #0d1529;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            color: #10b981;
+                          "
+                        >
+                          Withdraw
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">Recent Transactions</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          padding: 5px 0;
+                          border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <span style="color: #94a3b8"
+                          >Invested — 123 Main St (50%)</span
+                        ><span style="color: #ef4444">-$175,000</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          padding: 5px 0;
+                          border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <span style="color: #94a3b8">Rental Income Claimed</span
+                        ><span style="color: #10b981">+$1,330</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          padding: 5px 0;
+                          display: flex;
+                          justify-content: space-between;
+                        "
+                      >
+                        <span style="color: #94a3b8">Deposited via Bank</span
+                        ><span style="color: #10b981">+$250,000</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">💰 Rental Earnings</span
+                        ><span class="badge ba">3 Pending</span>
+                      </div>
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: repeat(3, 1fr);
+                          gap: 8px;
+                          margin-bottom: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            background: #080f20;
+                            border-radius: 6px;
+                            padding: 8px;
+                          "
+                        >
+                          <div
+                            style="
+                              font-size: 9px;
+                              color: #334155;
+                              font-family: 'JetBrains Mono', monospace;
+                            "
+                          >
+                            UNCLAIMED
+                          </div>
+                          <div
+                            style="
+                              font-size: 15px;
+                              font-weight: 700;
+                              color: #f59e0b;
+                            "
+                          >
+                            $2,080
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            background: #080f20;
+                            border-radius: 6px;
+                            padding: 8px;
+                          "
+                        >
+                          <div
+                            style="
+                              font-size: 9px;
+                              color: #334155;
+                              font-family: 'JetBrains Mono', monospace;
+                            "
+                          >
+                            CLAIMED
+                          </div>
+                          <div
+                            style="
+                              font-size: 15px;
+                              font-weight: 700;
+                              color: #10b981;
+                            "
+                          >
+                            $1,330
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            background: #080f20;
+                            border-radius: 6px;
+                            padding: 8px;
+                          "
+                        >
+                          <div
+                            style="
+                              font-size: 9px;
+                              color: #334155;
+                              font-family: 'JetBrains Mono', monospace;
+                            "
+                          >
+                            TOTAL
+                          </div>
+                          <div
+                            style="
+                              font-size: 15px;
+                              font-weight: 700;
+                              color: #e2e8f0;
+                            "
+                          >
+                            $3,410
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          padding: 6px 8px;
+                          background: #080f20;
+                          border-radius: 6px;
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 6px;
+                          border: 1px solid rgba(245, 158, 11, 0.15);
+                        "
+                      >
+                        <span style="color: #94a3b8"
+                          >123 Main Street — Apr 2026</span
+                        ><span style="color: #f59e0b">$1,330</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          padding: 6px 8px;
+                          background: #080f20;
+                          border-radius: 6px;
+                          display: flex;
+                          justify-content: space-between;
+                          margin-bottom: 10px;
+                          border: 1px solid rgba(245, 158, 11, 0.15);
+                        "
+                      >
+                        <span style="color: #94a3b8"
+                          >456 Oak + 321 Elm — Apr 2026</span
+                        ><span style="color: #f59e0b">$750</span>
+                      </div>
+                      <button
+                        class="btn btn-g"
+                        style="width: 100%; justify-content: center"
+                      >
+                        Claim All $2,080
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 6: RENTER — LEASES ════════════════════════════════════════ -->
+        <div class="slide" id="s6">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user"
+              >renter@equityblock.com · Renter Mode</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item">
+                <span class="ni">🏠</span> Browse Rentals
+              </div>
+              <div class="nav-item">
+                <span class="ni">📋</span> My Applications
+              </div>
+              <div class="nav-item active">
+                <span class="ni">📄</span> My Leases
+              </div>
+              <div class="nav-item"><span class="ni">🔧</span> Maintenance</div>
+              <div class="nav-item"><span class="ni">👤</span> My Profile</div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>My Leases</h2>
+                  <p>Active rental agreements and payment schedule</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="kpi green">
+                    <div class="kl">Active Leases</div>
+                    <div class="kv" style="font-size: 18px">1</div>
+                  </div>
+                  <div class="kpi amber">
+                    <div class="kl">Monthly Rent</div>
+                    <div class="kv" style="font-size: 16px">$2,660</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Days Remaining</div>
+                    <div class="kv" style="font-size: 18px">335</div>
+                  </div>
+                  <div class="kpi green">
+                    <div class="kl">Wallet Balance</div>
+                    <div class="kv" style="font-size: 16px">$8,420</div>
+                  </div>
+                </div>
+                <div
+                  class="card"
+                  style="border-color: rgba(16, 185, 129, 0.25)"
+                >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 700;
+                          color: #e2e8f0;
+                        "
+                      >
+                        123 Main Street, Indianapolis, IN
+                      </div>
+                      <div style="font-size: 10px; color: #475569">
+                        Apr 16, 2026 → Apr 15, 2027 · Manager: Manager
+                      </div>
+                    </div>
+                    <span class="badge bg">Active</span>
+                  </div>
+                  <div
+                    style="
+                      background: rgba(16, 185, 129, 0.06);
+                      border: 1px solid rgba(16, 185, 129, 0.15);
+                      border-radius: 8px;
+                      padding: 12px;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                      "
+                    >
+                      <div>
+                        <div
+                          style="
+                            font-size: 10px;
+                            color: #10b981;
+                            font-family: 'JetBrains Mono', monospace;
+                            text-transform: uppercase;
+                            margin-bottom: 2px;
+                          "
+                        >
+                          Next Payment Due
+                        </div>
+                        <div
+                          style="
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: #e2e8f0;
+                          "
+                        >
+                          $2,660
+                        </div>
+                        <div style="font-size: 10px; color: #475569">
+                          Due Jun 16, 2026
+                        </div>
+                      </div>
+                      <div style="text-align: right">
+                        <div
+                          style="
+                            font-size: 10px;
+                            color: #475569;
+                            margin-bottom: 4px;
+                          "
+                        >
+                          Wallet balance: $8,420
+                        </div>
+                        <button class="btn btn-g" style="font-size: 11px">
+                          💳 Pay Rent from Wallet
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      font-size: 10px;
+                      color: #334155;
+                      font-family: 'JetBrains Mono', monospace;
+                      margin-bottom: 6px;
+                    "
+                  >
+                    PAYMENT SCHEDULE — 12 months
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(6, 1fr);
+                      gap: 4px;
+                    "
+                  >
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #080f20;
+                        border-radius: 4px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #64748b;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        Apr
+                      </div>
+                      <span
+                        class="badge bg"
+                        style="font-size: 7px; padding: 1px 4px"
+                        >Paid</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #080f20;
+                        border-radius: 4px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #64748b;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        May
+                      </div>
+                      <span
+                        class="badge bg"
+                        style="font-size: 7px; padding: 1px 4px"
+                        >Paid</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #0d1529;
+                        border-radius: 4px;
+                        border: 1px solid rgba(16, 185, 129, 0.2);
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #e2e8f0;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        Jun
+                      </div>
+                      <span
+                        class="badge ba"
+                        style="font-size: 7px; padding: 1px 4px"
+                        >Due</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #080f20;
+                        border-radius: 4px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #64748b;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        Jul
+                      </div>
+                      <span
+                        class="badge bb"
+                        style="font-size: 7px; padding: 1px 4px"
+                        >Pending</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #080f20;
+                        border-radius: 4px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #64748b;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        Aug
+                      </div>
+                      <span
+                        class="badge bb"
+                        style="font-size: 7px; padding: 1px 4px"
+                        >Pending</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 5px;
+                        background: #080f20;
+                        border-radius: 4px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-size: 8px;
+                          color: #64748b;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                      >
+                        +7 more
+                      </div>
+                      <span
+                        style="
+                          font-size: 7px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                        "
+                        >→ Mar '27</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 7: MANAGER — PROPERTIES ═══════════════════════════════════ -->
+        <div class="slide" id="s7">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user"
+              >manager@equityblock.com · Property Manager</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">⚙️</span> Manage Properties
+              </div>
+              <div class="nav-item">
+                <span class="ni">🏠</span> Rental Listings
+              </div>
+              <div class="nav-item">
+                <span class="ni">📋</span> Applications
+              </div>
+              <div class="nav-item"><span class="ni">📄</span> Leases</div>
+              <div class="nav-item"><span class="ni">🔧</span> Maintenance</div>
+              <div class="nav-item"><span class="ni">👤</span> My Profile</div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="ph" style="margin-bottom: 0">
+                    <h2>Manage Properties</h2>
+                    <p>List and manage investment & rental properties</p>
+                  </div>
+                  <button class="btn btn-g">+ New Property</button>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="kpi green">
+                    <div class="kl">Active Listings</div>
+                    <div class="kv" style="font-size: 18px">7/7</div>
+                  </div>
+                  <div class="kpi green">
+                    <div class="kl">Total Value</div>
+                    <div class="kv" style="font-size: 16px">$2.8M</div>
+                  </div>
+                  <div class="kpi amber">
+                    <div class="kl">Rent Roll</div>
+                    <div class="kv" style="font-size: 16px">$18,450</div>
+                  </div>
+                  <div class="kpi blue">
+                    <div class="kl">Investors</div>
+                    <div class="kv" style="font-size: 18px">1</div>
+                  </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Address</th>
+                      <th>Listing Type</th>
+                      <th>Price</th>
+                      <th>Rent/mo</th>
+                      <th>Sold %</th>
+                      <th>Yield</th>
+                      <th>Token</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>123 Main Street, Indy</td>
+                      <td><span class="badge bc">Both</span></td>
+                      <td style="color: #e2e8f0">$350,000</td>
+                      <td style="color: #10b981">$2,660</td>
+                      <td>65%</td>
+                      <td style="color: #10b981">9.1%</td>
+                      <td><span class="badge bv">On-chain ✓</span></td>
+                      <td>
+                        <button
+                          class="btn"
+                          style="
+                            padding: 3px 8px;
+                            font-size: 9px;
+                            background: #0d1529;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            color: #10b981;
+                          "
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>456 Oak Avenue, Carmel</td>
+                      <td><span class="badge bc">Both</span></td>
+                      <td style="color: #e2e8f0">$525,000</td>
+                      <td style="color: #10b981">$2,100</td>
+                      <td>42%</td>
+                      <td style="color: #10b981">4.8%</td>
+                      <td><span class="badge bv">On-chain ✓</span></td>
+                      <td>
+                        <button
+                          class="btn"
+                          style="
+                            padding: 3px 8px;
+                            font-size: 9px;
+                            background: #0d1529;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            color: #10b981;
+                          "
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>555 Commerce Blvd, Indy</td>
+                      <td><span class="badge bb">Invest Only</span></td>
+                      <td style="color: #e2e8f0">$890,000</td>
+                      <td style="color: #10b981">$5,500</td>
+                      <td>10%</td>
+                      <td style="color: #10b981">7.4%</td>
+                      <td><span class="badge bv">On-chain ✓</span></td>
+                      <td>
+                        <button
+                          class="btn"
+                          style="
+                            padding: 3px 8px;
+                            font-size: 9px;
+                            background: #0d1529;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            color: #10b981;
+                          "
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>321 Elm Street, Zionsville</td>
+                      <td><span class="badge bc">Both</span></td>
+                      <td style="color: #e2e8f0">$725,000</td>
+                      <td style="color: #10b981">$3,300</td>
+                      <td>35%</td>
+                      <td style="color: #10b981">5.5%</td>
+                      <td><span class="badge bv">On-chain ✓</span></td>
+                      <td>
+                        <button
+                          class="btn"
+                          style="
+                            padding: 3px 8px;
+                            font-size: 9px;
+                            background: #0d1529;
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            color: #10b981;
+                          "
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 8: MANAGER — LEASES & MAINTENANCE ═════════════════════════ -->
+        <div class="slide" id="s8">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user"
+              >manager@equityblock.com · Property Manager</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item">
+                <span class="ni">⚙️</span> Manage Properties
+              </div>
+              <div class="nav-item">
+                <span class="ni">🏠</span> Rental Listings
+              </div>
+              <div class="nav-item">
+                <span class="ni">📋</span> Applications
+              </div>
+              <div class="nav-item active">
+                <span class="ni">📄</span> Leases
+              </div>
+              <div class="nav-item"><span class="ni">🔧</span> Maintenance</div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>Leases & Maintenance</h2>
+                  <p>Manage tenant payments and repair requests</p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                  "
+                >
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">Active Lease — 123 Main St</span
+                        ><span class="badge bg">Active</span>
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          color: #475569;
+                          margin-bottom: 8px;
+                        "
+                      >
+                        Renter · Apr 16, 2026 → Apr 15, 2027 · $2,660/mo
+                      </div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Apr 16, 2026</td>
+                            <td style="color: #e2e8f0">$2,660</td>
+                            <td style="color: #475569">wallet</td>
+                            <td><span class="badge bg">Paid</span></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>May 16, 2026</td>
+                            <td style="color: #e2e8f0">$2,660</td>
+                            <td style="color: #475569">wallet</td>
+                            <td><span class="badge bg">Paid</span></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>Jun 16, 2026</td>
+                            <td style="color: #e2e8f0">$2,660</td>
+                            <td style="color: #475569">—</td>
+                            <td><span class="badge ba">Due</span></td>
+                            <td>
+                              <button
+                                class="btn btn-g"
+                                style="padding: 3px 8px; font-size: 9px"
+                              >
+                                Mark Paid
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: repeat(3, 1fr);
+                          gap: 6px;
+                          margin-top: 10px;
+                        "
+                      >
+                        <div class="kpi green" style="padding: 8px">
+                          <div class="kl">Paid</div>
+                          <div class="kv" style="font-size: 16px">2</div>
+                        </div>
+                        <div class="kpi amber" style="padding: 8px">
+                          <div class="kl">Due</div>
+                          <div class="kv" style="font-size: 16px">1</div>
+                        </div>
+                        <div class="kpi blue" style="padding: 8px">
+                          <div class="kl">Remaining</div>
+                          <div class="kv" style="font-size: 16px">9</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">🔧 Maintenance Requests</span
+                        ><span class="badge ba">2 Open</span>
+                      </div>
+                      <div
+                        style="
+                          padding: 8px;
+                          background: #080f20;
+                          border-radius: 6px;
+                          margin-bottom: 6px;
+                          border-left: 3px solid #ef4444;
+                        "
+                      >
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 3px;
+                          "
+                        >
+                          <span
+                            style="
+                              font-size: 11px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                            >Kitchen sink is leaking</span
+                          ><span class="badge br">Emergency</span>
+                        </div>
+                        <div
+                          style="
+                            font-size: 10px;
+                            color: #475569;
+                            margin-bottom: 5px;
+                          "
+                        >
+                          123 Main St · Renter · Plumbing
+                        </div>
+                        <div style="display: flex; gap: 6px">
+                          <button
+                            class="btn"
+                            style="
+                              padding: 3px 8px;
+                              font-size: 9px;
+                              background: rgba(59, 130, 246, 0.15);
+                              color: #3b82f6;
+                              border: none;
+                            "
+                          >
+                            Start →</button
+                          ><button
+                            class="btn btn-g"
+                            style="padding: 3px 8px; font-size: 9px"
+                          >
+                            Complete
+                          </button>
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          padding: 8px;
+                          background: #080f20;
+                          border-radius: 6px;
+                          border-left: 3px solid #f59e0b;
+                        "
+                      >
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 3px;
+                          "
+                        >
+                          <span
+                            style="
+                              font-size: 11px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                            >HVAC not cooling properly</span
+                          ><span class="badge ba">High</span>
+                        </div>
+                        <div
+                          style="
+                            font-size: 10px;
+                            color: #475569;
+                            margin-bottom: 5px;
+                          "
+                        >
+                          456 Oak Ave · Tenant · HVAC · Est. $800
+                        </div>
+                        <div style="display: flex; gap: 6px">
+                          <button
+                            class="btn"
+                            style="
+                              padding: 3px 8px;
+                              font-size: 9px;
+                              background: rgba(59, 130, 246, 0.15);
+                              color: #3b82f6;
+                              border: none;
+                            "
+                          >
+                            Start →
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card" style="padding: 10px">
+                      <div class="card-hdr" style="margin-bottom: 6px">
+                        <span class="ct">Add Expense</span>
+                      </div>
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 1fr 1fr;
+                          gap: 6px;
+                        "
+                      >
+                        <div class="fg">
+                          <label>Description</label
+                          ><input
+                            value="Plumber callout fee"
+                            class="filled"
+                            style="font-size: 10px"
+                          />
+                        </div>
+                        <div class="fg">
+                          <label>Amount ($)</label
+                          ><input
+                            value="250.00"
+                            class="filled"
+                            style="font-size: 10px"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 9: BLOCKCHAIN ══════════════════════════════════════════════ -->
+        <div class="slide" id="s9">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock — Blockchain Layer</span>
+            <span class="topbar-user"
+              >Hardhat 3.3 · Solidity 0.8.28 · OpenZeppelin ERC20 ·
+              PropertyTokenFactory</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>On-Chain Ownership — ERC20 Property Tokens</h2>
+                  <p>
+                    Every property has its own ERC20 token. Every investment is
+                    immutably recorded on-chain.
+                  </p>
+                </div>
+                <div class="chain" style="margin-bottom: 16px">
+                  <div class="step">
+                    <div class="step-dot done">🏠</div>
+                    <div class="step-label">Property<br />Listed</div>
+                  </div>
+                  <div class="step-connector"></div>
+                  <div class="step">
+                    <div class="step-dot done">🪙</div>
+                    <div class="step-label">Token<br />Deployed</div>
+                  </div>
+                  <div class="step-connector"></div>
+                  <div class="step">
+                    <div class="step-dot done">💰</div>
+                    <div class="step-label">Investor<br />Buys</div>
+                  </div>
+                  <div class="step-connector"></div>
+                  <div class="step">
+                    <div class="step-dot active">🔗</div>
+                    <div class="step-label">Tokens<br />Minted</div>
+                  </div>
+                  <div
+                    class="step-connector"
+                    style="
+                      background: linear-gradient(
+                        90deg,
+                        rgba(16, 185, 129, 0.3),
+                        rgba(16, 185, 129, 0.1)
+                      );
+                    "
+                  ></div>
+                  <div class="step">
+                    <div class="step-dot wait">📊</div>
+                    <div class="step-label">Rent<br />Recorded</div>
+                  </div>
+                  <div
+                    class="step-connector"
+                    style="background: rgba(16, 185, 129, 0.1)"
+                  ></div>
+                  <div class="step">
+                    <div class="step-dot wait">🔄</div>
+                    <div class="step-label">Sell &<br />Burn</div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                  "
+                >
+                  <div>
+                    <div class="tx-block">
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        PropertyTokenFactory ·
+                        0x5FbDB2315678afecb367f032d93F642f64180aa3
+                      </div>
+                      <div class="tx-id">
+                        DEPLOY: PropertyToken("EquityBlock 123 Main Street",
+                        "EBFDCC")
+                      </div>
+                      <div class="tx-meta">
+                        Token: 0xa16E02E8...5d2be · MAX: 100,000 tokens · 1,000
+                        = 1%
+                      </div>
+                    </div>
+                    <div class="tx-block">
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        mintForInvestment() · Tx 0x3fa2c1b8...
+                      </div>
+                      <div class="tx-id">
+                        MINT: 50,000 tokens → investor wallet (50% stake)
+                      </div>
+                      <div class="tx-meta">
+                        Block #4821 · Gas: 0.002 ETH · Confirmed ✓
+                      </div>
+                    </div>
+                    <div class="tx-block" style="border-left-color: #8b5cf6">
+                      <div
+                        style="
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          margin-bottom: 4px;
+                        "
+                      >
+                        recordRentDistribution() · Tx 0x9bc4d2a7...
+                      </div>
+                      <div class="tx-id">
+                        DISTRIBUTE: 266000 cents rent — Apr 2026
+                      </div>
+                      <div class="tx-meta">
+                        Block #5102 · totalRentDistributed: $2,660 on-chain
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">Token Registry — 7 Properties</span>
+                      </div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Property</th>
+                            <th>Symbol</th>
+                            <th>Token Address</th>
+                            <th>Minted</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>123 Main St</td>
+                            <td style="color: #10b981">EBFDCC</td>
+                            <td style="color: #8b5cf6; font-size: 9px">
+                              0xa16E...2be
+                            </td>
+                            <td>65,000</td>
+                          </tr>
+                          <tr>
+                            <td>456 Oak Ave</td>
+                            <td style="color: #10b981">EB8EA8</td>
+                            <td style="color: #8b5cf6; font-size: 9px">
+                              0x10C6...D26
+                            </td>
+                            <td>42,000</td>
+                          </tr>
+                          <tr>
+                            <td>555 Commerce</td>
+                            <td style="color: #10b981">EB2B9C</td>
+                            <td style="color: #8b5cf6; font-size: 9px">
+                              0x8633...E9a
+                            </td>
+                            <td>10,000</td>
+                          </tr>
+                          <tr>
+                            <td>321 Elm St</td>
+                            <td style="color: #10b981">EBB7A5</td>
+                            <td style="color: #8b5cf6; font-size: 9px">
+                              0xB7A5...968
+                            </td>
+                            <td>35,000</td>
+                          </tr>
+                          <tr>
+                            <td>210 Maple Ln</td>
+                            <td style="color: #10b981">EBFFDD</td>
+                            <td style="color: #8b5cf6; font-size: 9px">
+                              0x9CfA...3e4
+                            </td>
+                            <td>0</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div
+                        style="
+                          margin-top: 8px;
+                          font-size: 9px;
+                          color: #334155;
+                          font-family: 'JetBrains Mono', monospace;
+                          text-align: center;
+                        "
+                      >
+                        Base L2 mainnet deployment ready · Graceful fallback
+                        when node offline
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 10: ADMIN OVERVIEW ═════════════════════════════════════════ -->
+        <div class="slide" id="s10">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock</span>
+            <span class="topbar-user"
+              >admin@equityblock.com · Platform Admin</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="sidebar">
+              <div class="nav-item active">
+                <span class="ni">📊</span> Overview
+              </div>
+              <div class="nav-item"><span class="ni">👥</span> Users</div>
+              <div class="nav-item"><span class="ni">🏛</span> Properties</div>
+              <div class="nav-item"><span class="ni">👤</span> My Profile</div>
+            </div>
+            <div class="main">
+              <div class="page">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="ph" style="margin-bottom: 0">
+                    <h2>Admin Overview</h2>
+                    <p>Platform health, metrics, and user management</p>
+                  </div>
+                  <button class="btn btn-v">⚡ Trigger Distribution</button>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                  "
+                >
+                  <div>
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 6px;
+                        margin-bottom: 10px;
+                      "
+                    >
+                      <div class="kpi violet">
+                        <div class="kl">Total Users</div>
+                        <div class="kv" style="font-size: 18px">3</div>
+                      </div>
+                      <div class="kpi green">
+                        <div class="kl">Active Props</div>
+                        <div class="kv" style="font-size: 18px">7</div>
+                      </div>
+                      <div class="kpi blue">
+                        <div class="kl">Total Invested</div>
+                        <div class="kv" style="font-size: 16px">$62K</div>
+                      </div>
+                      <div class="kpi amber">
+                        <div class="kl">Distributed</div>
+                        <div class="kv" style="font-size: 16px">$3.4K</div>
+                      </div>
+                      <div class="kpi green">
+                        <div class="kl">Active Leases</div>
+                        <div class="kv" style="font-size: 18px">1</div>
+                      </div>
+                      <div class="kpi red">
+                        <div class="kl">Maintenance</div>
+                        <div class="kv" style="font-size: 18px">2</div>
+                      </div>
+                    </div>
+                    <div class="card" style="padding: 10px">
+                      <div class="card-hdr">
+                        <span class="ct">User Management</span>
+                      </div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Wallet</th>
+                            <th>Holdings</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Investor</td>
+                            <td><span class="badge bg">Investor</span></td>
+                            <td style="color: #10b981">$62,420</td>
+                            <td>3</td>
+                          </tr>
+                          <tr>
+                            <td>Manager</td>
+                            <td><span class="badge bv">Manager</span></td>
+                            <td style="color: #e2e8f0">$0</td>
+                            <td>0</td>
+                          </tr>
+                          <tr>
+                            <td>Admin</td>
+                            <td><span class="badge ba">Admin</span></td>
+                            <td style="color: #e2e8f0">$0</td>
+                            <td>0</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="card">
+                      <div class="card-hdr">
+                        <span class="ct">🔔 Recent Platform Activity</span
+                        ><span class="badge ba">5 unread</span>
+                      </div>
+                      <div class="notif">
+                        <div class="notif-dot"></div>
+                        <div
+                          class="notif-icon"
+                          style="background: rgba(16, 185, 129, 0.1)"
+                        >
+                          💰
+                        </div>
+                        <div style="flex: 1">
+                          <div class="notif-title">Rental Income Available</div>
+                          <div class="notif-msg">
+                            $1,330 ready to claim for Apr 2026
+                          </div>
+                          <div class="notif-time">2 min ago</div>
+                        </div>
+                      </div>
+                      <div class="notif">
+                        <div class="notif-dot"></div>
+                        <div
+                          class="notif-icon"
+                          style="background: rgba(16, 185, 129, 0.1)"
+                        >
+                          📈
+                        </div>
+                        <div style="flex: 1">
+                          <div class="notif-title">Investment Confirmed</div>
+                          <div class="notif-msg">
+                            Invested 50% in 123 Main Street for $175,000
+                          </div>
+                          <div class="notif-time">1h ago</div>
+                        </div>
+                      </div>
+                      <div class="notif">
+                        <div
+                          class="notif-icon"
+                          style="background: rgba(139, 92, 246, 0.1)"
+                        >
+                          📋
+                        </div>
+                        <div style="flex: 1">
+                          <div class="notif-title">Lease Created</div>
+                          <div class="notif-msg">
+                            New lease for 123 Main Street · Apr 2026
+                          </div>
+                          <div class="notif-time">2h ago</div>
+                        </div>
+                      </div>
+                      <div class="notif">
+                        <div
+                          class="notif-icon"
+                          style="background: rgba(239, 68, 68, 0.1)"
+                        >
+                          🔧
+                        </div>
+                        <div style="flex: 1">
+                          <div class="notif-title">Emergency Maintenance</div>
+                          <div class="notif-msg">
+                            Kitchen sink leaking — assigned to plumber
+                          </div>
+                          <div class="notif-time">3h ago</div>
+                        </div>
+                      </div>
+                      <div class="notif">
+                        <div
+                          class="notif-icon"
+                          style="background: rgba(16, 185, 129, 0.1)"
+                        >
+                          💳
+                        </div>
+                        <div style="flex: 1">
+                          <div class="notif-title">Rent Payment Received</div>
+                          <div class="notif-msg">
+                            $2,660 rent paid via wallet — 123 Main St
+                          </div>
+                          <div class="notif-time">1d ago</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 11: TECH STACK ════════════════════════════════════════════ -->
+        <div class="slide" id="s11">
+          <div class="topbar">
+            <span class="topbar-brand">🏛 EquityBlock — Technology Stack</span>
+            <span class="topbar-user"
+              >Production · https://www.dapparchitects.com</span
+            >
+          </div>
+          <div class="app-layout">
+            <div class="main">
+              <div class="page">
+                <div class="ph">
+                  <h2>Production-Grade Full Stack</h2>
+                  <p>
+                    Modern, scalable technologies deployed on enterprise
+                    infrastructure
+                  </p>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div class="card" style="padding: 12px">
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: #10b981;
+                        font-family: 'JetBrains Mono', monospace;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-bottom: 8px;
+                      "
+                    >
+                      Frontend
+                    </div>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">▲</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Next.js 16
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            React 19 · Tailwind CSS v4
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">☁️</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Cloudinary
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            Image upload & CDN delivery
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">▲</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Vercel
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            Auto-deploy from GitHub
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card" style="padding: 12px">
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: #10b981;
+                        font-family: 'JetBrains Mono', monospace;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-bottom: 8px;
+                      "
+                    >
+                      Backend
+                    </div>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">🟢</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Express.js
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            REST API · JWT Auth · bcryptjs
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">🐘</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            PostgreSQL 16
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            20 tables · Railway managed
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">🚀</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Railway
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            Backend + DB hosting
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card" style="padding: 12px">
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: #8b5cf6;
+                        font-family: 'JetBrains Mono', monospace;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-bottom: 8px;
+                      "
+                    >
+                      Blockchain
+                    </div>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">⛓</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Hardhat 3.3
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            Solidity 0.8.28 · ethers.js
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">🔐</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            OpenZeppelin 5
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            ERC20 per property token
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span style="font-size: 16px">⚡</span>
+                        <div>
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 600;
+                              color: #e2e8f0;
+                            "
+                          >
+                            Base L2 Ready
+                          </div>
+                          <div style="font-size: 10px; color: #475569">
+                            Mainnet deployment planned
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 8px;
+                  "
+                >
+                  <div
+                    style="
+                      background: rgba(16, 185, 129, 0.06);
+                      border: 1px solid rgba(16, 185, 129, 0.15);
+                      border-radius: 8px;
+                      padding: 10px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="
+                        font-size: 9px;
+                        color: #334155;
+                        font-family: 'JetBrains Mono', monospace;
+                        margin-bottom: 4px;
+                      "
+                    >
+                      USER ROLES
+                    </div>
+                    <div
+                      style="font-size: 20px; font-weight: 700; color: #10b981"
+                    >
+                      4
+                    </div>
+                    <div style="font-size: 10px; color: #475569">
+                      Investor · Renter · Manager · Admin
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      background: rgba(16, 185, 129, 0.06);
+                      border: 1px solid rgba(16, 185, 129, 0.15);
+                      border-radius: 8px;
+                      padding: 10px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="
+                        font-size: 9px;
+                        color: #334155;
+                        font-family: 'JetBrains Mono', monospace;
+                        margin-bottom: 4px;
+                      "
+                    >
+                      API ROUTES
+                    </div>
+                    <div
+                      style="font-size: 20px; font-weight: 700; color: #10b981"
+                    >
+                      17
+                    </div>
+                    <div style="font-size: 10px; color: #475569">
+                      REST endpoints
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      background: rgba(16, 185, 129, 0.06);
+                      border: 1px solid rgba(16, 185, 129, 0.15);
+                      border-radius: 8px;
+                      padding: 10px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="
+                        font-size: 9px;
+                        color: #334155;
+                        font-family: 'JetBrains Mono', monospace;
+                        margin-bottom: 4px;
+                      "
+                    >
+                      DB TABLES
+                    </div>
+                    <div
+                      style="font-size: 20px; font-weight: 700; color: #10b981"
+                    >
+                      20
+                    </div>
+                    <div style="font-size: 10px; color: #475569">
+                      PostgreSQL schemas
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      background: rgba(16, 185, 129, 0.06);
+                      border: 1px solid rgba(16, 185, 129, 0.15);
+                      border-radius: 8px;
+                      padding: 10px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="
+                        font-size: 9px;
+                        color: #334155;
+                        font-family: 'JetBrains Mono', monospace;
+                        margin-bottom: 4px;
+                      "
+                    >
+                      SMART CONTRACTS
+                    </div>
+                    <div
+                      style="font-size: 20px; font-weight: 700; color: #10b981"
+                    >
+                      2
+                    </div>
+                    <div style="font-size: 10px; color: #475569">
+                      Token + Factory
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SLIDE 12: END ════════════════════════════════════════════════════ -->
+        <div
+          class="slide"
+          id="s12"
+          style="
+            background: linear-gradient(
+              135deg,
+              #03060f 0%,
+              #060c1a 50%,
+              #080f20 100%
+            );
+            align-items: center;
+            justify-content: center;
+            min-height: 540px;
+          "
+        >
+          <div style="text-align: center; padding: 40px 32px; max-width: 620px">
+            <div
+              style="
+                font-size: 44px;
+                margin-bottom: 14px;
+                filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.5));
+              "
+            >
+              🏛
+            </div>
+            <div class="brand-display">
+              <span class="brand-solid">Equity</span
+              ><span class="brand-outline">Block</span>
+            </div>
+            <div
+              style="
+                font-size: 13px;
+                color: #10b981;
+                font-family: 'JetBrains Mono', monospace;
+                letter-spacing: 0.1em;
+                margin-bottom: 24px;
+              "
+            >
+              FRACTIONAL REAL ESTATE INVESTMENT PLATFORM
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 24px;
+                text-align: left;
+              "
+            >
+              <div
+                style="
+                  background: rgba(16, 185, 129, 0.05);
+                  border: 1px solid rgba(16, 185, 129, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #10b981;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Fractional Investing
+                </div>
+                <div style="font-size: 11px; color: #475569">
+                  Buy 1–100% of any property · Earn proportional rental income ·
+                  Sell anytime at market price
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(139, 92, 246, 0.05);
+                  border: 1px solid rgba(139, 92, 246, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #8b5cf6;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Blockchain Ownership
+                </div>
+                <div style="font-size: 11px; color: #475569">
+                  ERC20 token per property · Immutable ownership records ·
+                  Transparent audit trail
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(245, 158, 11, 0.05);
+                  border: 1px solid rgba(245, 158, 11, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #f59e0b;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Full Property Management
+                </div>
+                <div style="font-size: 11px; color: #475569">
+                  Rental listings · Applications · Lease management ·
+                  Maintenance tracking · Expense reports
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(6, 182, 212, 0.05);
+                  border: 1px solid rgba(6, 182, 212, 0.12);
+                  border-radius: 10px;
+                  padding: 14px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #06b6d4;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Production Deployed
+                </div>
+                <div style="font-size: 11px; color: #475569">
+                  Railway + Vercel + Cloudinary · GitHub auto-deploy · Custom
+                  domain · SSL
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                font-size: 14px;
+                color: #10b981;
+                font-weight: 600;
+                margin-bottom: 4px;
+              "
+            >
+              https://www.dapparchitects.com
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #334155;
+                font-family: 'JetBrains Mono', monospace;
+              "
+            >
+              info@dapparchitects.com
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /screen -->
+
+      <div class="controls">
+        <button class="cbtn" id="prevBtn" onclick="changeSlide(-1)">
+          ◀ Prev
+        </button>
+        <button class="cbtn pause" id="playBtn" onclick="togglePlay()">
+          ⏸ Pause
+        </button>
+        <button class="cbtn" id="nextBtn" onclick="changeSlide(1)">
+          Next ▶
+        </button>
+        <div id="prog-o"><div id="prog-i"></div></div>
+        <div id="sinfo">Slide 1 / 12</div>
+      </div>
+    </div>
+
+    <script>
+      const SLIDES = document.querySelectorAll('.slide');
+      const DURATIONS = [
+        5000, 6000, 6500, 6000, 6000, 6500, 6000, 6500, 7000, 6500, 6000, 6000,
+      ];
+      let cur = 0,
+        playing = true,
+        progTimer = null,
+        elapsed = 0,
+        start = 0;
+
+      const LABELS = [
+        'Title — EquityBlock Platform',
+        'Investor — Property Marketplace',
+        'Investor — Property Detail & Investment Calculator',
+        'Investor — Portfolio Holdings',
+        'Investor — Wallet & Rental Earnings',
+        'Renter — Lease Management & Pay Rent',
+        'Manager — Manage Properties',
+        'Manager — Leases & Maintenance',
+        'Blockchain — ERC20 Token Registry',
+        'Admin — Platform Overview & Notifications',
+        'Technology Stack',
+        'Summary',
+      ];
+
+      function showSlide(n) {
+        SLIDES[cur].classList.remove('active');
+        cur = (n + SLIDES.length) % SLIDES.length;
+        SLIDES[cur].classList.add('active');
+        document.getElementById('sinfo').textContent =
+          `${LABELS[cur]} · ${cur + 1}/${SLIDES.length}`;
+        if (playing) startTimer();
+      }
+
+      function startTimer() {
+        clearInterval(progTimer);
+        elapsed = 0;
+        start = Date.now();
+        const dur = DURATIONS[cur];
+        document.getElementById('prog-i').style.width = '0%';
+        progTimer = setInterval(() => {
+          elapsed = Date.now() - start;
+          document.getElementById('prog-i').style.width =
+            Math.min(100, (elapsed / dur) * 100) + '%';
+          if (elapsed >= dur) {
+            clearInterval(progTimer);
+            showSlide(cur + 1);
+          }
+        }, 80);
+      }
+
+      function togglePlay() {
+        playing = !playing;
+        const btn = document.getElementById('playBtn');
+        if (playing) {
+          btn.textContent = '⏸ Pause';
+          btn.className = 'cbtn pause';
+          startTimer();
+        } else {
+          clearInterval(progTimer);
+          btn.textContent = '▶ Play';
+          btn.className = 'cbtn play';
+        }
+      }
+
+      function changeSlide(d) {
+        clearInterval(progTimer);
+        showSlide(cur + d);
+      }
+
+      document.getElementById('sinfo').textContent =
+        `${LABELS[0]} · 1/${SLIDES.length}`;
+      startTimer();
+    </script>
+  </body>
+</html>
