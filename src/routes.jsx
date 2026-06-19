@@ -6,6 +6,7 @@ import ProductDetail from '@/pages/ProjectDetail';
 import Contact from '@/pages/Contact';
 import PageNotFound from '@/lib/PageNotFound';
 import { productData } from '@/content/products/data';
+import Book from '@/pages/Book';
 
 export const routes = [
   {
@@ -22,6 +23,7 @@ export const routes = [
         getStaticPaths: () => productData.map((p) => `/products/${p.slug}`),
       },
       { path: 'contact', element: <Contact /> },
+      { path: 'book', element: <Book /> },
       { path: '*', element: <PageNotFound /> },
     ],
   },

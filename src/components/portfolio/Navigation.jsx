@@ -94,6 +94,13 @@ export default function Navigation() {
             >
               Contact
             </Link>
+
+            <Link
+              to="/book"
+              className="ml-2 px-3 py-1.5 rounded text-xs font-semibold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Book a Demo
+            </Link>
           </nav>
 
           {/* Theme toggle */}
@@ -203,6 +210,14 @@ export default function Navigation() {
                 }`}
               >
                 Contact
+              </Link>
+
+              <Link
+                to="/book"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center px-3 py-2.5 mt-1 rounded text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Book a Demo
               </Link>
             </nav>
           </motion.div>

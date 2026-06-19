@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;900&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
 @font-face {
   font-family: 'Designer Block';
@@ -40,9 +40,10 @@
     --chart-5: 27 87% 67%;
     --radius: 0.25rem;
 
-    --font-sans: 'Inter', sans-serif;
+    --font-sans: 'DM Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    --font-designer: 'Designer Block', 'Inter', sans-serif;
+    --font-heading: 'Nunito', 'DM Sans', sans-serif;
+    --font-designer: 'Designer Block', 'Nunito', sans-serif;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -98,6 +99,23 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Nunito's heaviest weight is 900 (used via font-black). A hairline same-color
+   stroke fattens the large headings so they read heavier. Tune the px value
+   (try 0.3–0.7) or delete this block to revert. */
+h1,
+h2 {
+  -webkit-text-stroke: 0.5px currentColor;
+}
+/* keep that stroke from bleeding into the Designer Block product wordmark */
+.font-designer-block {
+  -webkit-text-stroke-width: 0;
 }
 
 /* Custom scrollbar */

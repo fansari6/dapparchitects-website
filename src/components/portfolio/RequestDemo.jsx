@@ -1,10 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 import HUDLabel from './HUDLabel';
 
-// Gated demo CTA. Replaces the public credentials block — visitors request a
-// guided demo rather than logging into a live environment with shared creds.
+// Gated demo CTA. Sends visitors to the on-site /book page (Cal.com embed
+// wrapped in the site's own chrome) rather than a live environment with shared
+// credentials or an off-site booking page.
+/**
+ * @param {{ title?: string }} props
+ */
 export default function RequestDemo({ title }) {
   return (
     <div className="mb-16">
@@ -15,15 +19,16 @@ export default function RequestDemo({ title }) {
           {title
             ? `Want to see ${title} in action?`
             : 'Want to see this platform in action?'}{' '}
-          We run guided walkthroughs tailored to your organisation — access to a
-          live environment is provided on request.
+          We run guided walkthroughs tailored to your organization — in person or
+          over Zoom. Book a time that works for you.
         </p>
+
         <Link
-          to="/contact"
+          to="/book"
           className="inline-flex items-center gap-2 mt-6 bg-primary text-primary-foreground px-6 py-3 font-semibold text-sm hover:bg-primary/90 transition-colors rounded"
         >
-          Request a Demo
-          <ArrowRight className="w-4 h-4" />
+          <CalendarCheck className="w-4 h-4" />
+          Book a Demo
         </Link>
       </div>
     </div>

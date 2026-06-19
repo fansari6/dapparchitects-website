@@ -16,6 +16,11 @@ export const site = {
   // (e.g. info@, sales@, or faruk.ansari@dapparchitects.com).
   contactEmail: 'info@dapparchitects.com',
 
+  // Cal.com booking link — just the slug after cal.com/, e.g. 'faruk-ansari/demo'
+  // (NOT the full URL). The /book page embeds this. While empty, /book shows a
+  // graceful "scheduler coming soon" fallback pointing to the contact page.
+  bookingCalLink: 'faruk.ansari-dapparchitects.com/demo',
+
   tagline: 'Blockchain & full-stack engineering for regulated industries.',
   description:
     'DApp Architects designs and delivers enterprise-grade blockchain and full-stack platforms for pharmaceutical supply chains, medical device tracking, and tokenized real estate — where auditability, compliance, and immutability are non-negotiable.',
@@ -25,7 +30,7 @@ export const hero = {
   eyebrow: 'Blockchain · Full-Stack · Regulated Industries',
   titleTop: 'Software You Don’t Have to Trust',
   titleAccent: 'Because You Can Verify It',
-  body: 'DApp Architects is a blockchain and full-stack software consultancy. We design and deliver enterprise-grade platforms for pharmaceutical supply chains, medical device tracking, and tokenized real estate — where auditability, compliance, and immutability are non-negotiable.',
+  body: 'A blockchain and full-stack consultancy building enterprise platforms for pharmaceutical supply chains, medical-device tracking, and tokenized real estate — where compliance and immutability are requirements, not features.',
 };
 
 // Home "Core Capabilities" grid. `icon` is a lucide-react icon name.
@@ -33,7 +38,7 @@ export const capabilities = [
   {
     icon: 'Layers',
     title: 'Enterprise Blockchain',
-    desc: 'Hyperledger Fabric permissioned networks, Solidity smart contracts on EVM chains. We build production-grade distributed ledgers used by IBM, Walmart, and major financial institutions.',
+    desc: 'Hyperledger Fabric permissioned networks and Solidity smart contracts on EVM chains — built on the same production-grade ledger technology IBM, Walmart, and major financial institutions run in production.',
     tags: [
       'Hyperledger Fabric',
       'JavaScript',
@@ -81,7 +86,7 @@ export const capabilities = [
 export const stats = [
   { key: 'platforms', label: 'Production-Grade Platforms' }, // value injected
   { value: '8+', label: 'Regulatory Frameworks Covered' },
-  { value: 'Permissioned', label: 'Enterprise Blockchain' },
+  { value: 'Protocol-Level', label: 'Access Control (Not Just UI)' },
   { value: '1s', label: 'FDA Recall Response (vs 3–7 days)' },
 ];
 
