@@ -65,6 +65,17 @@ export default function Navigation() {
               Products
             </Link>
 
+            <Link
+              to="/research"
+              className={`px-3 py-1.5 rounded text-xs font-medium tracking-wide transition-colors ${
+                location.pathname === '/research'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              Research
+            </Link>
+
             {products.map((p) => {
               const isActive = location.pathname === `/products/${p.slug}`;
               return (
@@ -173,6 +184,18 @@ export default function Navigation() {
                 }`}
               >
                 Products
+              </Link>
+
+              <Link
+                to="/research"
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center px-3 py-2.5 rounded text-sm font-medium transition-colors ${
+                  location.pathname === '/research'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                Research
               </Link>
 
               <div className="h-px bg-border my-1" />
