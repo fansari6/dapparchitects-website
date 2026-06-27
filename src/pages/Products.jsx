@@ -122,13 +122,13 @@ export default function Products() {
           <h2 className="text-3xl lg:text-4xl font-black tracking-tight text-foreground mb-6">
             Want something like this for your industry?
           </h2>
-          <a
-            href={`mailto:${site.contactEmail}`}
+          <Link
+            to="/contact"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 font-semibold text-base hover:bg-primary/90 transition-colors rounded"
           >
             Start a Project
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </motion.div>
       </section>
 

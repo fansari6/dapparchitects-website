@@ -12,6 +12,7 @@ import {
 import Navigation from '@/components/portfolio/Navigation';
 import Seo from '@/components/Seo';
 import { site, about } from '@/content/site';
+import { Link } from "react-router-dom";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -275,13 +276,14 @@ export default function About() {
             If you're working in a regulated industry and need software that can
             be audited, proven, and trusted — we'd like to talk.
           </p>
-          <a
-            href={`mailto:${site.contactEmail}`}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 font-semibold text-base hover:bg-primary/90 transition-colors rounded"
-          >
-            Get in Touch
-            <ArrowRight className="w-5 h-5" />
-          </a>
+          
+          <Link
+  to="/contact"
+  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 font-semibold text-base hover:bg-primary/90 transition-colors rounded"
+>
+  Get in Touch
+  <ArrowRight className="w-5 h-5" />
+</Link>
         </motion.div>
       </section>
 

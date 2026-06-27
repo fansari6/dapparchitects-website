@@ -77,13 +77,13 @@ export default function Home() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-wrap gap-4 mt-10"
         >
-          <a
-            href={`mailto:${site.contactEmail}`}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 font-semibold text-sm hover:bg-primary/90 transition-colors rounded"
+          <Link
+            to="/contact"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 font-semibold text-base hover:bg-primary/90 transition-colors rounded"
           >
             Start a Project
-            <ArrowRight className="w-4 h-4" />
-          </a>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
           <Link
             to="/products"
             className="inline-flex items-center gap-2 border border-border text-foreground px-6 py-3 font-semibold text-sm hover:bg-muted transition-colors rounded"
@@ -230,13 +230,14 @@ export default function Home() {
             regulated-industry startups that need blockchain and full-stack
             engineering done right.
           </p>
-          <a
-            href={`mailto:${site.contactEmail}`}
+          
+          <Link
+            to="/contact"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 font-semibold text-base hover:bg-primary/90 transition-colors rounded"
           >
             Get in Touch
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </motion.div>
       </section>
 
