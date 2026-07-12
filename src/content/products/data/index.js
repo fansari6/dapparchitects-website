@@ -9,12 +9,14 @@ import pharmachain from './pharmachain.js';
 import equityblock from './equityblock.js';
 import implantchain from './implantchain.js';
 import dentalchain from './dentalchain.js';
+import fdaintelligence from './fdaintelligence.js';
 
 export const productData = [
   implantchain,
   dentalchain,
   pharmachain,
   equityblock,
+  fdaintelligence,
 ];
 
 export const productSlugs = productData.map((p) => p.slug);

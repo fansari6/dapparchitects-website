@@ -6,10 +6,12 @@ import pharmachain from '@/assets/pharmachain.png';
 import equityblock from '@/assets/equityblock.png';
 import implantchain from '@/assets/implantchain.png';
 import dentalchain from '@/assets/dentalchain.png';
+import fdaintelligence from '@/assets/fdaintelligence.png';
 
 export const productImages = {
   pharmachain,
   equityblock,
   implantchain,
   dentalchain,
+  fdaintelligence,
 };
