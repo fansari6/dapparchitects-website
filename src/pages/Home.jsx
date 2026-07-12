@@ -31,6 +31,7 @@ const jsonLd = {
   '@type': 'Organization',
   name: site.name,
   url: site.url,
+  logo: `${site.url}/dapp-architects-website-logo.png`,
   description: site.description,
   email: site.contactEmail,
   makesOffer: products.map((p) => ({

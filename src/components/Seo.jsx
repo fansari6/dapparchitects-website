@@ -25,7 +25,7 @@ export default function Seo({
   const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
   const desc = description || site.description;
   const canonical = ORIGIN + (path === '/' ? '' : path);
-  const ogImage = absolute(image);
+  const ogImage = absolute(image || site.image);
 
   return (
     <Head>

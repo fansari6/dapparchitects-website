@@ -9,6 +9,10 @@ export const site = {
   // Used for canonical URLs, sitemap, and Open Graph absolute links.
   url: 'https://dapparchitects.com',
 
+  // Default social-share image (1200×630) used by Seo when a page passes none —
+  // so the homepage and every non-product page get a proper link-preview card.
+  image: '/og.png',
+
   // ⚠️ CONFIRM THIS INBOX EXISTS AND RECEIVES MAIL.
   // The old pages hardcoded `hello@dapparchitects.com` in three places; if that
   // mailbox isn't real, every "Start a Project" / "Get in Touch" lead silently

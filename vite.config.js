@@ -17,7 +17,9 @@ function seoFiles() {
         '/',
         '/about',
         '/products',
+        '/research',
         '/contact',
+        '/book',
         ...productData.map((p) => `/products/${p.slug}`),
       ];
       const lastmod = new Date().toISOString().slice(0, 10);
