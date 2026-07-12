@@ -16,9 +16,9 @@ export default {
     'FDA Intelligence connects every FDA medical-device database — device registration (GUDID), 510(k)/PMA clearances, MAUDE adverse events, recalls, and manufacturing establishments — into one linked, queryable API. The entire corpus is mirrored locally, so a single call returns a device’s complete regulatory picture.',
   longDescription:
     'Every FDA device database exists in isolation, keyed differently, with no shared identifiers. Answering a simple question — “what is this device’s full safety history?” — means manually stitching five sources together. FDA Intelligence does the stitching: it mirrors 115 GB of FDA device data (including all 24.4M MAUDE reports with narratives, refreshed weekly) and links it by UDI-DI and product code. One REST call — or one plain-English question — returns the fully joined record.',
-  liveDemo: 'fdaintelligence.dapparchitects.com',
+  liveDemo: 'FDA Intelligence — Feature Walkthrough',
   website: 'fdaintelligence.dapparchitects.com',
-  demoUrl: 'https://fdaintelligence.dapparchitects.com/device/00643169007222',
+  demoUrl: '/fdaintelligence-demo.html',
   image: 'fdaintelligence',
   techStack: [
     'Node.js / Express',

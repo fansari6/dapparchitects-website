@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FDA Intelligence — Feature Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:#03060f;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+@font-face{font-family:'DesignerBlock';src:url('/fonts/DESIB___.TTF') format('truetype');font-display:swap}
+.brand-display{font-family:'DesignerBlock',sans-serif;font-size:52px;line-height:1;letter-spacing:3px}
+.brand-solid{color:#0b5fff}
+.brand-outline{color:transparent;-webkit-text-stroke:2.5px#4d8bff;text-stroke:2.5px#4d8bff}
+
+#demo{width:100%;max-width:900px;background:#060c1a;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(77,139,255,0.09)}
+#screen{height:560px;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity 0.5s ease;pointer-events:none}
+.slide.active{opacity:1;pointer-events:all}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;background:#080f20;border-bottom:1px solid rgba(77,139,255,0.1);flex-shrink:0}
+.topbar-brand{font-size:13px;font-weight:700;color:#4d8bff;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;display:flex;align-items:center;gap:7px}
+.topbar-user{font-size:10px;color:#475569;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:10px}
+.pill{padding:2px 9px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;background:rgba(11,95,255,0.15);color:#4d8bff;border:1px solid rgba(11,95,255,0.28)}
+.body{flex:1;padding:26px 30px;overflow:hidden;display:flex;flex-direction:column}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#3f5680;margin-bottom:12px}
+.h{font-size:22px;font-weight:800;color:#eaf1fb;letter-spacing:-0.01em;margin-bottom:4px}
+.sub{font-size:13px;color:#7c8aa3;margin-bottom:18px}
+.mono{font-family:'JetBrains Mono',monospace}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:#0a1223;border:1px solid rgba(77,139,255,0.12);border-radius:12px;padding:15px}
+.stat .n{font-size:24px;font-weight:800;color:#eaf1fb}
+.stat.alert .n{color:#ff6b6b}
+.stat .l{font-size:11px;color:#7c8aa3;margin-top:3px}
+.card{background:#0a1223;border:1px solid rgba(77,139,255,0.12);border-radius:12px;padding:16px 18px}
+.chip{display:inline-block;background:rgba(11,95,255,0.12);border:1px solid rgba(77,139,255,0.22);color:#9dc0ff;border-radius:99px;padding:3px 11px;font-size:11px;font-family:'JetBrains Mono',monospace;margin-right:6px}
+.searchbar{display:flex;align-items:center;gap:10px;background:#0a1223;border:1.5px solid rgba(77,139,255,0.35);border-radius:12px;padding:14px 18px;font-size:15px;color:#eaf1fb}
+.searchbar .q{flex:1}
+.searchbar .btn{background:linear-gradient(135deg,#0b5fff,#4d8bff);color:#fff;font-weight:700;border-radius:8px;padding:7px 16px;font-size:13px}
+.interp{display:flex;align-items:center;gap:8px;color:#9dc0ff;font-size:13px;margin:14px 0 16px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(77,139,255,0.08);font-size:13px;color:#c6d4ea}
+.row:last-child{border:0}
+.bar{height:26px;border-radius:6px;background:linear-gradient(90deg,#0b5fff,#4d8bff);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-size:12px;font-weight:700}
+.risk{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);border-radius:12px;padding:12px 18px}
+.risk .s{font-size:30px;font-weight:800;color:#ff6b6b}
+.risk .lv{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#ff9b9b}
+.node{background:#0a1223;border:1px solid rgba(77,139,255,0.18);border-radius:10px;padding:9px 4px;text-align:center;font-size:11px;color:#9dc0ff;font-family:'JetBrains Mono',monospace}
+.codeblk{background:#05090f;border:1px solid rgba(77,139,255,0.15);border-radius:10px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#c6d4ea;line-height:1.7;overflow:hidden}
+.codeblk .k{color:#4d8bff}.codeblk .s{color:#7ee787}.codeblk .c{color:#3f5680}
+
+.controls{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#080f20;border-top:1px solid rgba(77,139,255,0.08);flex-shrink:0}
+.cbtn{background:transparent;border:1px solid rgba(77,139,255,0.15);color:#475569;padding:5px 13px;border-radius:5px;font-size:11px;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.15s;flex-shrink:0}
+.cbtn:hover{background:rgba(77,139,255,0.08);color:#e2e8f0}
+.cbtn.play{background:linear-gradient(135deg,#0b5fff,#4d8bff);border-color:transparent;color:#fff}
+.cbtn.pause{background:rgba(77,139,255,0.12);border-color:rgba(77,139,255,0.3);color:#4d8bff}
+#sinfo{font-size:9.5px;color:#334155;font-family:'JetBrains Mono',monospace;min-width:240px;text-align:center;flex-shrink:0}
+#prog-o{flex:1;height:3px;background:#0d1529;border-radius:2px;overflow:hidden}
+#prog-i{height:100%;background:linear-gradient(90deg,#0b5fff,#4d8bff);width:0%;transition:width 0.08s linear}
+</style>
+</head>
+<body>
+<div id="demo">
+<div id="screen">
+
+  <!-- 1 · TITLE -->
+  <div class="slide active" style="align-items:center;justify-content:center;text-align:center;background:radial-gradient(120% 90% at 50% 30%,#0d1830,#04070f)">
+    <div style="padding:40px">
+      <div class="brand-display"><span class="brand-solid">FDA</span><span class="brand-outline">Intelligence</span></div>
+      <div style="font-size:17px;color:#9dc0ff;margin-top:22px;font-weight:600">Every FDA device database. One API. Linked by UDI-DI.</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:26px;flex-wrap:wrap">
+        <span class="chip">GUDID</span><span class="chip">510(k)/PMA</span><span class="chip">MAUDE</span><span class="chip">Recalls</span><span class="chip">Establishments</span>
+      </div>
+      <div class="mono" style="font-size:11px;color:#3f5680;margin-top:30px">fdaintelligence.dapparchitects.com</div>
+    </div>
+  </div>
+
+  <!-- 2 · NL SEARCH -->
+  <div class="slide">
+    <div class="topbar"><div class="topbar-brand">✦ FDA Intelligence — Ask</div><div class="topbar-user"><span class="pill">Natural Language</span></div></div>
+    <div class="body">
+      <div class="kicker">Ask anything · plain English</div>
+      <div class="searchbar"><span class="q mono">Medtronic cardiac devices recalled since 2023</span><span class="btn">Ask</span></div>
+      <div class="interp">✦ Interpreted as: recalls · firm “Medtronic” · category cardiac · since 2023-01-01</div>
+      <div class="card">
+        <div class="row"><span><b style="color:#eaf1fb">Z-1847-2024</b> · Class II · Cardiac lead insulation defect</span><span class="mono" style="color:#7c8aa3">2024-08</span></div>
+        <div class="row"><span><b style="color:#eaf1fb">Z-0923-2023</b> · Class I · CRT-D battery depletion</span><span class="mono" style="color:#7c8aa3">2023-11</span></div>
+        <div class="row"><span><b style="color:#eaf1fb">Z-2210-2023</b> · Class II · Programmer software error</span><span class="mono" style="color:#7c8aa3">2023-05</span></div>
+      </div>
+      <div class="mono" style="font-size:11px;color:#3f5680;margin-top:14px">→ structured · cited · no query language to learn</div>
+    </div>
+  </div>
+
+  <!-- 3 · DEVICE REPORT -->
+  <div class="slide">
+    <div class="topbar"><div class="topbar-brand">⎇ Device Intelligence</div><div class="topbar-user mono">UDI-DI 00643169007222</div></div>
+    <div class="body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div><div class="h">Viva™ Quad XT CRT-D</div><div class="sub" style="margin:0">MEDTRONIC, INC. · linked across GUDID · 510(k) · MAUDE · recalls · establishments</div>
+        <div style="margin-top:10px"><span class="chip">NIK</span><span class="chip">KRG</span><span class="chip">Implantable</span></div></div>
+        <div class="risk"><div class="s">78</div><div class="lv">High risk</div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n">6</div><div class="l">510(k) clearances</div></div>
+        <div class="stat alert"><div class="n">167,720</div><div class="l">Adverse events</div></div>
+        <div class="stat alert"><div class="n">153</div><div class="l">Recalls</div></div>
+        <div class="stat"><div class="n">26</div><div class="l">Facilities</div></div>
+      </div>
+      <div class="mono" style="font-size:11px;color:#3f5680;margin-top:16px">GET /api/v1/device/00643169007222 · one call · 579 ms</div>
+    </div>
+  </div>
+
+  <!-- 4 · ADVERSE EVENTS -->
+  <div class="slide">
+    <div class="topbar"><div class="topbar-brand">▤ MAUDE Adverse Events</div><div class="topbar-user mono">24.4M reports · 57.8M narratives</div></div>
+    <div class="body">
+      <div class="kicker">Product code NIK · precomputed rollups</div>
+      <div class="h" style="margin-bottom:18px">167,720 reports, broken down instantly</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><div style="font-size:12px;color:#7c8aa3;margin-bottom:5px">Injury</div><div class="bar" style="width:100%">83,892</div></div>
+        <div><div style="font-size:12px;color:#7c8aa3;margin-bottom:5px">Malfunction</div><div class="bar" style="width:94%">78,881</div></div>
+        <div><div style="font-size:12px;color:#7c8aa3;margin-bottom:5px">Death</div><div class="bar" style="width:16%;background:linear-gradient(90deg,#c0392b,#ff6b6b)">4,776</div></div>
+      </div>
+      <div class="mono" style="font-size:11px;color:#3f5680;margin-top:18px">24-million-row aggregation → primary-key lookup · sub-second</div>
+    </div>
+  </div>
+
+  <!-- 5 · MOAT -->
+  <div class="slide">
+    <div class="topbar"><div class="topbar-brand">◈ The linking is the moat</div><div class="topbar-user mono">cross-source query</div></div>
+    <div class="body">
+      <div class="kicker">One query · every FDA database</div>
+      <div class="h" style="margin-bottom:16px">Questions no single FDA API can answer</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px">
+        <div class="node">GUDID</div><div class="node">510(k)/PMA</div><div class="node">MAUDE</div><div class="node">Recalls</div>
+        <div class="node">Establishments</div><div class="node">Enforcement</div><div class="node">Classifications</div><div class="node" style="background:rgba(11,95,255,0.18);color:#eaf1fb;border-color:rgba(77,139,255,0.4)">↳ linked</div>
+      </div>
+      <div class="codeblk"><span class="c"># recalls on devices made at a facility in the last 3 years</span><br><span class="k">GET</span> /api/v1/search/facility-risk?facility=<span class="s">Medtronic</span>&since=<span class="s">2023-01-01</span><br><span class="c">→ 200 facilities · 83 product codes · 74 linked recalls</span></div>
+    </div>
+  </div>
+
+  <!-- 6 · API + FREE -->
+  <div class="slide">
+    <div class="topbar"><div class="topbar-brand">⚡ Build on it</div><div class="topbar-user"><span class="pill">Free tier</span></div></div>
+    <div class="body">
+      <div class="kicker">REST · natural language · public pages</div>
+      <div class="h" style="margin-bottom:16px">Get an API key and start in minutes</div>
+      <div class="codeblk" style="margin-bottom:14px"><span class="k">curl</span> -H <span class="s">"X-API-Key: sk_live_…"</span> \<br>&nbsp;&nbsp;https://fdaintelligence.dapparchitects.com/api/v1/device/00643169007222</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card"><div style="font-size:12px;color:#4d8bff;font-weight:700;margin-bottom:4px">50 free calls / day</div><div style="font-size:11px;color:#7c8aa3">No card required · upgrade anytime</div></div>
+        <div class="card"><div style="font-size:12px;color:#4d8bff;font-weight:700;margin-bottom:4px">5M public device pages</div><div style="font-size:11px;color:#7c8aa3">Manufacturer & product-code pages, indexed</div></div>
+      </div>
+      <div style="text-align:center;margin-top:18px"><span style="background:linear-gradient(135deg,#0b5fff,#4d8bff);color:#fff;font-weight:700;padding:10px 22px;border-radius:9px;font-size:14px">fdaintelligence.dapparchitects.com</span></div>
+    </div>
+  </div>
+
+</div><!-- /screen -->
+<div class="controls">
+  <button class="cbtn" onclick="changeSlide(-1)">◀</button>
+  <button class="cbtn play" id="playBtn" onclick="togglePlay()">⏸</button>
+  <button class="cbtn" onclick="changeSlide(1)">▶</button>
+  <div id="prog-o"><div id="prog-i"></div></div>
+  <div id="sinfo">Loading...</div>
+</div>
+</div>
+
+<script>
+const SLIDES=document.querySelectorAll('.slide');
+const DURATIONS=[4500,6500,6500,6000,6500,6000];
+const LABELS=['Title','Natural-Language Search','Device Intelligence Report','MAUDE Adverse Events','The Cross-Source Moat','API + Free Tier'];
+let cur=0,playing=true,progTimer=null,start=0;
+function showSlide(n){SLIDES[cur].classList.remove('active');cur=(n+SLIDES.length)%SLIDES.length;SLIDES[cur].classList.add('active');document.getElementById('sinfo').textContent=`${LABELS[cur]}  ·  ${cur+1} / ${SLIDES.length}`;if(playing)startTimer();}
+function startTimer(){clearInterval(progTimer);start=Date.now();const dur=DURATIONS[cur];document.getElementById('prog-i').style.width='0%';progTimer=setInterval(()=>{const el=Date.now()-start;document.getElementById('prog-i').style.width=Math.min(100,(el/dur)*100)+'%';if(el>=dur){clearInterval(progTimer);showSlide(cur+1);}},80);}
+function togglePlay(){playing=!playing;const b=document.getElementById('playBtn');if(playing){b.textContent='⏸';b.className='cbtn pause';startTimer();}else{clearInterval(progTimer);b.textContent='▶';b.className='cbtn play';}}
+function changeSlide(d){clearInterval(progTimer);showSlide(cur+d);}
+document.getElementById('sinfo').textContent=`${LABELS[0]}  ·  1 / ${SLIDES.length}`;
+startTimer();
+</script>
+</body>
+</html>
